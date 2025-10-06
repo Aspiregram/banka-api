@@ -31,15 +31,4 @@ public record UsuarioDto(
         @NotBlank(message = "ONG é obrigatória")
         Ong ong
 ) {
-
-    @Override
-    public String sobrenome() {
-        return sobrenome;
-    }
-
-    @Override
-    public String nome() {
-        return nome;
-    }
-
 }
