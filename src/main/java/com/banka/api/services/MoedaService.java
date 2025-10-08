@@ -25,7 +25,9 @@ public class MoedaService {
                 moedaDto.id(),
                 moedaDto.nome(),
                 moedaDto.sigla(),
-                moedaDto.paises()
+                moedaDto.paises(),
+                null, // dataCriacao
+                null  // ultimaAtualizacao
         );
 
         Moeda moedaSalva = moedaRepo.save(moeda);

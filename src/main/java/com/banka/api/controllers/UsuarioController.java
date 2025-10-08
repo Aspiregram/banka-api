@@ -32,7 +32,7 @@ public class UsuarioController {
     public ResponseEntity<List<UsuarioDto>> findAllUsuarios() {
         List<UsuarioDto> ususEncontrados = usuServ.findAll();
 
-        return ResponseEntity.status(HttpStatus.FOUND).body(ususEncontrados);
+        return ResponseEntity.status(HttpStatus.OK).body(ususEncontrados);
     }
 
     @PreAuthorize("hasRole('ONG')")
@@ -40,7 +40,7 @@ public class UsuarioController {
     public ResponseEntity<UsuarioDto> findUsuarioById(@PathVariable Long id) {
         UsuarioDto usuEncontrado = usuServ.findById(id);
 
-        return ResponseEntity.status(HttpStatus.FOUND).body(usuEncontrado);
+        return ResponseEntity.status(HttpStatus.OK).body(usuEncontrado);
     }
 
     @PreAuthorize("hasAnyRole('ONG','USER')")
@@ -50,7 +50,7 @@ public class UsuarioController {
             @PathVariable String sobrenome) {
         UsuarioDto usuEncontrado = usuServ.findByUsername(nome, sobrenome);
 
-        return ResponseEntity.status(HttpStatus.FOUND).body(usuEncontrado);
+        return ResponseEntity.status(HttpStatus.OK).body(usuEncontrado);
     }
 
     @PreAuthorize("hasRole('ONG')")
@@ -60,7 +60,7 @@ public class UsuarioController {
             @RequestBody UsuarioDto usuDto) {
         UsuarioDto usuAtualizado = usuServ.update(id, usuDto);
 
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(usuAtualizado);
+        return ResponseEntity.status(HttpStatus.OK).body(usuAtualizado);
     }
 
     @PreAuthorize("hasRole('ONG')")

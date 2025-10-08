@@ -5,12 +5,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "paises")
 public class Pais {
 
     @Id
@@ -23,12 +25,24 @@ public class Pais {
     @Column(columnDefinition = "CHAR(2)", nullable = false, unique = true)
     private String isoCode;
 
-    @ManyToMany
-    @JoinTable(
-            name = "Pais_Moeda",
-            joinColumns = @JoinColumn(name = "pais_id"),
-            inverseJoinColumns = @JoinColumn(name = "moeda_id")
-    )
+    @ManyToMany(mappedBy = "paises")
     private List<Moeda> moedas;
+
+    // Campos de auditoria
+    @Column(name = "data_criacao", nullable = false, updatable = false)
+    private LocalDateTime dataCriacao;
+
+    @Column(name = "ultima_atualizacao")
+    private LocalDateTime ultimaAtualizacao;
+
+    @PrePersist
+    protected void onCreate() {
+        dataCriacao = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        ultimaAtualizacao = LocalDateTime.now();
+    }
 
 }

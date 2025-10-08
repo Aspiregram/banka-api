@@ -25,7 +25,9 @@ public class PaisService {
                 paisDto.id(),
                 paisDto.nome(),
                 paisDto.isoCode(),
-                paisDto.moedas()
+                paisDto.moedas(),
+                null, // dataCriacao
+                null  // ultimaAtualizacao
         );
 
         Pais paisSalvo = paisRepo.save(pais);

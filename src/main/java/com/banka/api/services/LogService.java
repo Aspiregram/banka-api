@@ -22,7 +22,9 @@ public class LogService {
                 logDto.id(),
                 logDto.usuario(),
                 logDto.ong(),
-                logDto.dataAlteracao()
+                logDto.dataAlteracao(),
+                null, // dataCriacao
+                null  // ultimaAtualizacao
         );
 
         Log logSalvo = logRepo.save(log);

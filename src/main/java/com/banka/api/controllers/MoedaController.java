@@ -32,7 +32,7 @@ public class MoedaController {
     public ResponseEntity<List<MoedaDto>> findAllMoedas() {
         List<MoedaDto> moedasEncontradas = moedaServ.findAll();
 
-        return ResponseEntity.status(HttpStatus.FOUND).body(moedasEncontradas);
+        return ResponseEntity.status(HttpStatus.OK).body(moedasEncontradas);
     }
 
     @PreAuthorize("hasRole('ONG')")
@@ -40,7 +40,7 @@ public class MoedaController {
     public ResponseEntity<MoedaDto> findMoedaById(@PathVariable Long id) {
         MoedaDto moedaEncontrada = moedaServ.findById(id);
 
-        return ResponseEntity.status(HttpStatus.FOUND).body(moedaEncontrada);
+        return ResponseEntity.status(HttpStatus.OK).body(moedaEncontrada);
     }
 
     @PreAuthorize("hasRole('ONG')")
@@ -50,7 +50,7 @@ public class MoedaController {
             @RequestBody MoedaDto moedaDto) {
         MoedaDto moedaAtualizada = moedaServ.update(id, moedaDto);
 
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(moedaAtualizada);
+        return ResponseEntity.status(HttpStatus.OK).body(moedaAtualizada);
     }
 
     @PreAuthorize("hasRole('ONG')")

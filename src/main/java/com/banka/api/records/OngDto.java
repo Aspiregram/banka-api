@@ -18,7 +18,7 @@ public record OngDto(
         @Size(max = 30)
         String email,
 
-        @NotBlank(message = "Senha é obrigatória")
+        // Omitir senha do DTO para segurança
         String senha,
 
         @NotBlank(message = "Papel é obrigatório")

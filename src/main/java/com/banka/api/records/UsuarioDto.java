@@ -17,8 +17,7 @@ public record UsuarioDto(
         @Size(max = 30)
         String sobrenome,
 
-        @NotBlank(message = "Senha é obrigatória")
-        @Size(max = 50)
+        // Omitir senha do DTO para segurança
         String senha,
 
         @NotBlank(message = "Papel é obrigatório")

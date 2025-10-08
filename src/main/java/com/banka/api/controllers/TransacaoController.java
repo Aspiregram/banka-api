@@ -32,7 +32,7 @@ public class TransacaoController {
     public ResponseEntity<List<TransacaoDto>> findAllTransacoes() {
         List<TransacaoDto> transasEncontradas = transServ.findAll();
 
-        return ResponseEntity.status(HttpStatus.FOUND).body(transasEncontradas);
+        return ResponseEntity.status(HttpStatus.OK).body(transasEncontradas);
     }
 
     @PreAuthorize("hasAnyRole('ONG','USER')")
@@ -40,7 +40,7 @@ public class TransacaoController {
     public ResponseEntity<TransacaoDto> findTransacaoById(@PathVariable Long id) {
         TransacaoDto transEncontrada = transServ.findById(id);
 
-        return ResponseEntity.status(HttpStatus.FOUND).body(transEncontrada);
+        return ResponseEntity.status(HttpStatus.OK).body(transEncontrada);
     }
 
 }

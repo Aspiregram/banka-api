@@ -32,7 +32,7 @@ public class OngController {
     public ResponseEntity<List<OngDto>> findAllOngs() {
         List<OngDto> ongsEncontradas = ongServ.findAll();
 
-        return ResponseEntity.status(HttpStatus.FOUND).body(ongsEncontradas);
+        return ResponseEntity.status(HttpStatus.OK).body(ongsEncontradas);
     }
 
     @PreAuthorize("hasRole('ONG')")
@@ -40,7 +40,7 @@ public class OngController {
     public ResponseEntity<OngDto> findOngById(@PathVariable Long id) {
         OngDto ongEncontrada = ongServ.findById(id);
 
-        return ResponseEntity.status(HttpStatus.FOUND).body(ongEncontrada);
+        return ResponseEntity.status(HttpStatus.OK).body(ongEncontrada);
     }
 
     @PreAuthorize("hasRole('USER')")
@@ -48,7 +48,7 @@ public class OngController {
     public ResponseEntity<OngDto> findOngByEmail(@PathVariable String email) {
         OngDto ongEncontrada = ongServ.findByEmail(email);
 
-        return ResponseEntity.status(HttpStatus.FOUND).body(ongEncontrada);
+        return ResponseEntity.status(HttpStatus.OK).body(ongEncontrada);
     }
 
     @PreAuthorize("hasRole('ONG')")
@@ -58,7 +58,7 @@ public class OngController {
             @RequestBody OngDto ongDto) {
         OngDto ongAtualizada = ongServ.update(id, ongDto);
 
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(ongAtualizada);
+        return ResponseEntity.status(HttpStatus.OK).body(ongAtualizada);
     }
 
     @PreAuthorize("hasRole('ONG')")

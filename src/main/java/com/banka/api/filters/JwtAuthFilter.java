@@ -4,6 +4,7 @@ import com.banka.api.services.JwtService;
 import com.banka.api.services.UsersDetailsService;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -31,12 +32,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             HttpServletRequest req,
             HttpServletResponse res,
             FilterChain chain)
-            throws IOException, jakarta.servlet.ServletException {
+            throws IOException, ServletException {
         String header = req.getHeader("Authorization");
 
         if (header == null || !header.startsWith("Bearer ")) {
             chain.doFilter(req, res);
-
             return;
         }
 
@@ -47,7 +47,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             username = jwtServ.extractUsername(token);
         } catch (JwtException e) {
             chain.doFilter(req, res);
-
             return;
         }
 

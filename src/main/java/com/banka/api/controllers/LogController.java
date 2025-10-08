@@ -32,7 +32,7 @@ public class LogController {
     public ResponseEntity<List<LogDto>> findAllLogs() {
         List<LogDto> logsEncontrados = logServ.findAll();
 
-        return ResponseEntity.status(HttpStatus.FOUND).body(logsEncontrados);
+        return ResponseEntity.status(HttpStatus.OK).body(logsEncontrados);
     }
 
     @PreAuthorize("hasRole('ONG')")
@@ -40,7 +40,7 @@ public class LogController {
     public ResponseEntity<LogDto> findLogById(@PathVariable Long id) {
         LogDto logEncontrado = logServ.findById(id);
 
-        return ResponseEntity.status(HttpStatus.FOUND).body(logEncontrado);
+        return ResponseEntity.status(HttpStatus.OK).body(logEncontrado);
     }
 
     @PreAuthorize("hasRole('ONG')")
@@ -50,7 +50,7 @@ public class LogController {
             @RequestBody LogDto logDto) {
         LogDto logAtualizado = logServ.update(id, logDto);
 
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(logAtualizado);
+        return ResponseEntity.status(HttpStatus.OK).body(logAtualizado);
     }
 
     @PreAuthorize("hasRole('ONG')")

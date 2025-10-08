@@ -31,7 +31,10 @@ public class UsuarioService {
                 senhaCodificada,
                 Role.ROLE_USER,
                 usuDto.pais(),
-                usuDto.ong()
+                usuDto.ong(),
+                null, // faceHash
+                null, // dataCriacao
+                null  // ultimoLogin
         );
 
         Usuario usuSalvo = usuRepo.save(usu);
@@ -73,7 +76,10 @@ public class UsuarioService {
 
         usuEncontrado.setNome(usuDto.nome());
         usuEncontrado.setSobrenome(usuDto.sobrenome());
-        usuEncontrado.setSenha(usuDto.senha());
+        // Criptografa a senha novamente, caso tenha sido alterada
+        if (usuDto.senha() != null && !usuDto.senha().isBlank()) {
+            usuEncontrado.setSenha(passEncod.encode(usuDto.senha()));
+        }
         usuEncontrado.setPais(usuDto.pais());
         usuEncontrado.setOng(usuDto.ong());
 
@@ -90,11 +96,12 @@ public class UsuarioService {
     }
 
     private UsuarioDto toDto(Usuario usu) {
+        // Aqui você pode remover o campo senha do DTO retornado, se quiser
         return new UsuarioDto(
                 usu.getId(),
                 usu.getNome(),
                 usu.getSobrenome(),
-                usu.getSenha(),
+                null, // ou omitir a senha
                 usu.getRole(),
                 usu.getPais(),
                 usu.getOng()

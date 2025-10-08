@@ -33,7 +33,10 @@ public class OngService {
                 ongDto.email(),
                 senhaCodificada,
                 Role.ROLE_ONG,
-                ongDto.pais()
+                ongDto.pais(),
+                null, // faceHash
+                null, // dataCriacao
+                null  // ultimoLogin
         );
 
         Ong ongSalva = ongRepo.save(ong);
@@ -75,7 +78,10 @@ public class OngService {
 
         ongEncontrada.setNome(ongDto.nome());
         ongEncontrada.setEmail(ongDto.email());
-        ongEncontrada.setSenha(ongDto.senha());
+        // Criptografa a senha novamente, caso tenha sido alterada
+        if (ongDto.senha() != null && !ongDto.senha().isBlank()) {
+            ongEncontrada.setSenha(passEncod.encode(ongDto.senha()));
+        }
         ongEncontrada.setPais(ongDto.pais());
 
         Ong ongAtualizada = ongRepo.save(ongEncontrada);
@@ -91,11 +97,12 @@ public class OngService {
     }
 
     private OngDto toDto(Ong ong) {
+        // Aqui você pode remover o campo senha do DTO retornado, se quiser
         return new OngDto(
                 ong.getId(),
                 ong.getNome(),
                 ong.getEmail(),
-                ong.getSenha(),
+                null, // ou omitir a senha
                 ong.getRole(),
                 ong.getPais()
         );

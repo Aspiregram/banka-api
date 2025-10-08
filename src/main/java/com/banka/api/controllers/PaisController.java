@@ -32,7 +32,7 @@ public class PaisController {
     public ResponseEntity<List<PaisDto>> findAllPaises() {
         List<PaisDto> paisesEncontrados = paisServ.findAll();
 
-        return ResponseEntity.status(HttpStatus.FOUND).body(paisesEncontrados);
+        return ResponseEntity.status(HttpStatus.OK).body(paisesEncontrados);
     }
 
     @PreAuthorize("hasRole('ONG')")
@@ -40,7 +40,7 @@ public class PaisController {
     public ResponseEntity<PaisDto> findPaisById(@PathVariable Long id) {
         PaisDto paisEncontrado = paisServ.findById(id);
 
-        return ResponseEntity.status(HttpStatus.FOUND).body(paisEncontrado);
+        return ResponseEntity.status(HttpStatus.OK).body(paisEncontrado);
     }
 
     @PreAuthorize("hasRole('ONG')")
@@ -50,7 +50,7 @@ public class PaisController {
             @RequestBody PaisDto paisDto) {
         PaisDto paisAtualizado = paisServ.update(id, paisDto);
 
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(paisAtualizado);
+        return ResponseEntity.status(HttpStatus.OK).body(paisAtualizado);
     }
 
     @PreAuthorize("hasRole('ONG')")

@@ -25,7 +25,9 @@ public class TransacaoService {
                 transDto.valorFinal(),
                 transDto.moedaFinal(),
                 transDto.usuario(),
-                transDto.dataTransacao()
+                transDto.dataTransacao(),
+                null, // dataCriacao
+                null  // ultimaAtualizacao
         );
 
         Transacao transSalva = transRepo.save(trans);
