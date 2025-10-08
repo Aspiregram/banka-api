@@ -19,7 +19,7 @@ public class OngController {
         this.ongServ = ongServ;
     }
 
-    @PreAuthorize("hasRole('ONG')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<OngDto> saveOng(@RequestBody OngDto ongDto) {
         OngDto ongCriada = ongServ.save(ongDto);
@@ -27,7 +27,7 @@ public class OngController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ongCriada);
     }
 
-    @PreAuthorize("hasRole('ONG')")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<List<OngDto>> findAllOngs() {
         List<OngDto> ongsEncontradas = ongServ.findAll();
@@ -35,7 +35,7 @@ public class OngController {
         return ResponseEntity.status(HttpStatus.FOUND).body(ongsEncontradas);
     }
 
-    @PreAuthorize("hasRole('ONG')")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<OngDto> findOngById(@PathVariable Long id) {
         OngDto ongEncontrada = ongServ.findById(id);
@@ -43,7 +43,7 @@ public class OngController {
         return ResponseEntity.status(HttpStatus.FOUND).body(ongEncontrada);
     }
 
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @GetMapping("/{email}")
     public ResponseEntity<OngDto> findOngByEmail(@PathVariable String email) {
         OngDto ongEncontrada = ongServ.findByEmail(email);
@@ -51,7 +51,7 @@ public class OngController {
         return ResponseEntity.status(HttpStatus.FOUND).body(ongEncontrada);
     }
 
-    @PreAuthorize("hasRole('ONG')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<OngDto> updateOng(
             @PathVariable Long id,
@@ -61,7 +61,7 @@ public class OngController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(ongAtualizada);
     }
 
-    @PreAuthorize("hasRole('ONG')")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteOngById(@PathVariable Long id) {
         ongServ.deleteById(id);

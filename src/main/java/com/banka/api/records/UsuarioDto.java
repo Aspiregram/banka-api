@@ -3,6 +3,7 @@ package com.banka.api.records;
 import com.banka.api.enums.Role;
 import com.banka.api.models.Ong;
 import com.banka.api.models.Pais;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -16,6 +17,11 @@ public record UsuarioDto(
         @NotBlank(message = "Sobrenome é obrigatório")
         @Size(max = 30)
         String sobrenome,
+
+        @Email
+        @NotBlank(message = "Email é obrigatório")
+        @Size(max = 30)
+        String email,
 
         @NotBlank(message = "Senha é obrigatória")
         @Size(max = 50)

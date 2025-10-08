@@ -44,11 +44,10 @@ public class UsuarioController {
     }
 
     @PreAuthorize("hasAnyRole('ONG','USER')")
-    @GetMapping("/{nome}-{sobrenome}")
-    public ResponseEntity<UsuarioDto> findUsuarioByUsername(
-            @PathVariable String nome,
-            @PathVariable String sobrenome) {
-        UsuarioDto usuEncontrado = usuServ.findByUsername(nome, sobrenome);
+    @GetMapping("/{email}")
+    public ResponseEntity<UsuarioDto> findUsuarioByEmail(
+            @PathVariable String email) {
+        UsuarioDto usuEncontrado = usuServ.findByEmail(email);
 
         return ResponseEntity.status(HttpStatus.FOUND).body(usuEncontrado);
     }

@@ -28,6 +28,7 @@ public class UsuarioService {
                 usuDto.id(),
                 usuDto.nome(),
                 usuDto.sobrenome(),
+                usuDto.email(),
                 senhaCodificada,
                 Role.ROLE_USER,
                 usuDto.pais(),
@@ -58,8 +59,8 @@ public class UsuarioService {
         return toDto(usuEncontrado);
     }
 
-    public UsuarioDto findByUsername(String nome, String sobrenome) {
-        Usuario usuEncontrado = usuRepo.findByNomeAndSobrenome(nome, sobrenome)
+    public UsuarioDto findByEmail(String email) {
+        Usuario usuEncontrado = usuRepo.findByEmail(email)
                 .orElseThrow(() ->
                         new RuntimeException("Usuário não encontrado"));
 
@@ -94,6 +95,7 @@ public class UsuarioService {
                 usu.getId(),
                 usu.getNome(),
                 usu.getSobrenome(),
+                usu.getEmail(),
                 usu.getSenha(),
                 usu.getRole(),
                 usu.getPais(),
