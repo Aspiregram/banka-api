@@ -4,32 +4,27 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.GenericGenerator;
+
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "pais")
 public class Pais {
 
     @Id
-    @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "uuid2")
-    @Column(columnDefinition = "CHAR(36)")
-    private String id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
-    @Column(length = 100, nullable = false, unique = true) // Tamanho ajustado para 100 do BD
+    @Column(length = 100, nullable = false, unique = true)
     private String nome;
 
-    @Column(columnDefinition = "CHAR(3)", nullable = false, unique = true) // Ajustado para CHAR(3) do BD
+    @Column(columnDefinition = "CHAR(3)", nullable = false, unique = true)
     private String isoCode;
-
 
     @OneToMany(mappedBy = "pais", fetch = FetchType.LAZY)
     private List<Moeda> moedas;
-
-
 
 }

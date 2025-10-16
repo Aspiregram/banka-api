@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/moedas")
@@ -35,7 +36,7 @@ public class MoedaController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<MoedaDto> findMoedaById(@PathVariable String id) {
+    public ResponseEntity<MoedaDto> findMoedaById(@PathVariable UUID id) {
         MoedaDto moedaEncontrada = moedaServ.findById(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(moedaEncontrada);
@@ -44,7 +45,7 @@ public class MoedaController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<MoedaDto> updateMoeda(
-            @PathVariable String id,
+            @PathVariable UUID id,
             @RequestBody MoedaDto moedaDto) {
         MoedaDto moedaAtualizada = moedaServ.update(id, moedaDto);
 
@@ -53,7 +54,7 @@ public class MoedaController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteMoedaById(@PathVariable String id) {
+    public ResponseEntity<Void> deleteMoedaById(@PathVariable UUID id) {
         moedaServ.deleteById(id);
 
         return ResponseEntity.noContent().build();

@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/paises")
@@ -23,32 +24,37 @@ public class PaisController {
     @PostMapping
     public ResponseEntity<PaisDto> createPais(@RequestBody PaisDto paisDto) {
         PaisDto novoPais = paisService.save(paisDto);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(novoPais);
     }
 
     @GetMapping
     public ResponseEntity<List<PaisDto>> getAllPaises() {
         List<PaisDto> paises = paisService.findAll();
+
         return ResponseEntity.ok(paises);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PaisDto> getPaisById(@PathVariable String id) {
+    public ResponseEntity<PaisDto> getPaisById(@PathVariable UUID id) {
         PaisDto pais = paisService.findById(id);
+
         return ResponseEntity.ok(pais);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<PaisDto> updatePais(@PathVariable String id, @RequestBody PaisDto paisDto) {
+    public ResponseEntity<PaisDto> updatePais(@PathVariable UUID id, @RequestBody PaisDto paisDto) {
         PaisDto paisAtualizado = paisService.update(id, paisDto);
+
         return ResponseEntity.ok(paisAtualizado);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePais(@PathVariable String id) {
+    public ResponseEntity<Void> deletePais(@PathVariable UUID id) {
         paisService.deleteById(id);
+
         return ResponseEntity.noContent().build();
     }
 }

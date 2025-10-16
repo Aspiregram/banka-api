@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/logs")
@@ -19,7 +20,7 @@ public class LogController {
         this.logServ = logServ;
     }
 
-    @PreAuthorize("hasRole('ONG_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ONG')")
     @PostMapping
     public ResponseEntity<LogDto> saveLog(@RequestBody LogDto logDto) {
         LogDto logCriado = logServ.save(logDto);
@@ -27,7 +28,7 @@ public class LogController {
         return ResponseEntity.status(HttpStatus.CREATED).body(logCriado);
     }
 
-    @PreAuthorize("hasRole('ONG_ADMIN') or hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ONG')")
     @GetMapping
     public ResponseEntity<List<LogDto>> findAllLogs() {
         List<LogDto> logsEncontrados = logServ.findAll();
@@ -35,9 +36,9 @@ public class LogController {
         return ResponseEntity.status(HttpStatus.OK).body(logsEncontrados);
     }
 
-    @PreAuthorize("hasRole('ONG_ADMIN') or hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ONG')")
     @GetMapping("/{id}")
-    public ResponseEntity<LogDto> findLogById(@PathVariable String id) {
+    public ResponseEntity<LogDto> findLogById(@PathVariable UUID id) {
         LogDto logEncontrado = logServ.findById(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(logEncontrado);

@@ -1,8 +1,5 @@
 package com.banka.api.services;
 
-import com.banka.api.enums.TransacaoStatus;
-import com.banka.api.enums.TransacaoTipo;
-import com.banka.api.models.Conta;
 import com.banka.api.models.Transacao;
 import com.banka.api.records.TransacaoDto;
 import com.banka.api.repositories.TransacaoRepository;
@@ -10,52 +7,48 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 public class TransacaoService {
 
     private final TransacaoRepository transRepo;
-    private final ContaService contaService;
-    private final MoedaService moedaService;
+    private final ContaService contaServ;
 
-    public TransacaoService(TransacaoRepository transRepo, ContaService contaService, MoedaService moedaService) {
+    public TransacaoService(TransacaoRepository transRepo, ContaService contaServ) {
         this.transRepo = transRepo;
-        this.contaService = contaService;
-        this.moedaService = moedaService;
+        this.contaServ = contaServ;
     }
 
     @Transactional
-    public TransacaoDto realizarTransacao(TransacaoDto transDto) {
-        Conta contaOrigem = contaService.findEntityById(transDto.contaOrigemId());
-        Conta contaDestino = contaService.findEntityById(transDto.contaDestinoId());
-
+    public TransacaoDto makeTransaction(TransacaoDto transDto) {
         BigDecimal valorOriginal = transDto.valorOriginal();
-        if (contaOrigem.getSaldo().compareTo(valorOriginal) < 0) {
-            throw new RuntimeException("Saldo insuficiente na conta de origem.");
-        }
 
-        BigDecimal taxaConversao = contaDestino.getMoeda().getTaxaConversao();
+        if (transDto.contaOrigem().getSaldo().compareTo(valorOriginal) < 0)
+            throw new RuntimeException("Saldo insuficiente na conta de origem");
+
+        BigDecimal taxaConversao = transDto.contaFinal().getMoeda().getTaxaConversao();
         BigDecimal valorConvertido = valorOriginal.multiply(taxaConversao);
 
-        contaService.updateSaldo(contaOrigem.getId(), valorOriginal.negate());
-
-        contaService.updateSaldo(contaDestino.getId(), valorConvertido);
+        contaServ.updateSaldo(transDto.contaOrigem().getId(), valorOriginal.negate());
+        contaServ.updateSaldo(transDto.contaFinal().getId(), valorConvertido);
 
         Transacao trans = new Transacao(
-                null, // ID
-                contaOrigem,
-                contaDestino,
+                null,
+                transDto.contaOrigem(),
+                transDto.contaFinal(),
                 valorOriginal,
-                contaOrigem.getMoeda(),
+                transDto.moedaOrigem(),
                 valorConvertido,
-                contaDestino.getMoeda(),
+                transDto.moedaFinal(),
                 taxaConversao,
-                LocalDateTime.now(),
-                TransacaoTipo.TRANSFERENCIA,
-                TransacaoStatus.CONCLUIDA
+                null,
+                transDto.tipo(),
+                transDto.status(),
+                null,
+                null
         );
 
         Transacao transSalva = transRepo.save(trans);
@@ -74,7 +67,7 @@ public class TransacaoService {
                 .collect(Collectors.toList());
     }
 
-    public TransacaoDto findById(String id) {
+    public TransacaoDto findById(UUID id) {
         Transacao transEncontrada = transRepo.findById(id)
                 .orElseThrow(() ->
                         new RuntimeException("Transação não encontrada"));
@@ -84,17 +77,16 @@ public class TransacaoService {
 
     private TransacaoDto toDto(Transacao trans) {
         return new TransacaoDto(
-                trans.getId(),
-                trans.getContaOrigem().getId(),
-                trans.getContaDestino().getId(),
+                trans.getContaOrigem(),
+                trans.getContaDestino(),
                 trans.getValorOriginal(),
-                trans.getMoedaOrigem().getId(),
+                trans.getMoedaOrigem(),
                 trans.getValorConvertido(),
-                trans.getMoedaDestino().getId(),
+                trans.getMoedaDestino(),
                 trans.getTaxaUtilizada(),
-                trans.getDataTransacao(),
                 trans.getTipo(),
                 trans.getStatus()
         );
     }
+
 }

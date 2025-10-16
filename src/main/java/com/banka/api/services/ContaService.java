@@ -1,50 +1,38 @@
 package com.banka.api.services;
 
 import com.banka.api.models.Conta;
-import com.banka.api.models.Usuario;
-import com.banka.api.models.Moeda;
 import com.banka.api.records.ContaDto;
 import com.banka.api.repositories.ContaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 public class ContaService {
 
     private final ContaRepository contaRepo;
-    private final UsuarioService usuarioService;
-    private final MoedaService moedaService;
 
-    public ContaService(ContaRepository contaRepo, UsuarioService usuarioService, MoedaService moedaService) {
+    public ContaService(ContaRepository contaRepo) {
         this.contaRepo = contaRepo;
-        this.usuarioService = usuarioService;
-        this.moedaService = moedaService;
     }
 
     @Transactional
     public ContaDto save(ContaDto contaDto) {
-        // Validação: Busca as entidades Usuario e Moeda
-        Usuario usuario = usuarioService.findEntityById(contaDto.usuarioId());
-        Moeda moeda = moedaService.findEntityById(contaDto.moedaId());
-
-        if (contaRepo.existsByUsuarioIdAndMoedaId(usuario.getId(), moeda.getId())) {
-            throw new RuntimeException("O usuário já possui uma conta nesta moeda.");
+        if (contaRepo.existsByUsuarioIdAndMoedaId
+                (contaDto.usuario().getId(), contaDto.moeda().getId())) {
+            throw new RuntimeException("O usuário já possui uma conta nesta moeda");
         }
 
-        // CORREÇÃO: Criação do objeto Conta
         Conta conta = new Conta(
-                null, // ID será gerado
-                usuario,
-                moeda,
-                BigDecimal.ZERO, // Saldo inicial sempre ZERO
-                null, // dataCriacao é preenchida no @PrePersist
-                null, // transacoesEnviadas
-                null  // transacoesRecebidas
+                null,
+                contaDto.usuario(),
+                contaDto.moeda(),
+                null,
+                null
         );
 
         Conta contaSalva = contaRepo.save(conta);
@@ -58,24 +46,22 @@ public class ContaService {
                 .collect(Collectors.toList());
     }
 
-    // Método para ser usado por outros serviços (como TransacaoService)
-    public Conta findEntityById(String id) {
+    public ContaDto findById(UUID id) {
+        return toDto(findEntityById(id));
+    }
+
+    private Conta findEntityById(UUID id) {
         return contaRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Conta bancária não encontrada"));
     }
 
-    public ContaDto findById(String id) {
-        return toDto(findEntityById(id));
-    }
-
-
     @Transactional
-    public ContaDto updateSaldo(String id, BigDecimal valor) {
+    public ContaDto updateSaldo(UUID id, BigDecimal valor) {
         Conta conta = findEntityById(id);
 
-        if (conta.getSaldo().add(valor).compareTo(BigDecimal.ZERO) < 0) {
-            throw new RuntimeException("Saldo insuficiente para esta operação.");
-        }
+        if (conta.getSaldo().add(valor).compareTo(BigDecimal.ZERO) < 0)
+            throw new RuntimeException("Saldo insuficiente para esta operação");
+
 
         conta.setSaldo(conta.getSaldo().add(valor));
         Conta contaAtualizada = contaRepo.save(conta);
@@ -83,7 +69,7 @@ public class ContaService {
         return toDto(contaAtualizada);
     }
 
-    public void deleteById(String id) {
+    public void deleteById(UUID id) {
         if (!contaRepo.existsById(id))
             throw new RuntimeException("Conta não existe");
 
@@ -92,10 +78,10 @@ public class ContaService {
 
     private ContaDto toDto(Conta conta) {
         return new ContaDto(
-                conta.getId(),
-                conta.getUsuario().getId(),
-                conta.getMoeda().getId(),
+                conta.getUsuario(),
+                conta.getMoeda(),
                 conta.getSaldo()
         );
     }
+
 }

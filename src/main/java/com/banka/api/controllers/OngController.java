@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/ongs")
@@ -35,7 +36,7 @@ public class OngController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<OngDto> findOngById(@PathVariable String id) {
+    public ResponseEntity<OngDto> findOngById(@PathVariable UUID id) {
         OngDto ongEncontrada = ongServ.findById(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(ongEncontrada);
@@ -51,7 +52,7 @@ public class OngController {
     @PreAuthorize("hasRole('ONG_ADMIN') or hasRole('ROLE_ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<OngDto> updateOng(
-            @PathVariable String id,
+            @PathVariable UUID id,
             @RequestBody OngDto ongDto) {
         OngDto ongAtualizada = ongServ.update(id, ongDto);
 
@@ -60,7 +61,7 @@ public class OngController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteOngById(@PathVariable String id) {
+    public ResponseEntity<Void> deleteOngById(@PathVariable UUID id) {
         ongServ.deleteById(id);
 
         return ResponseEntity.noContent().build();

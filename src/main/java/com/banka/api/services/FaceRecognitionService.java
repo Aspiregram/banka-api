@@ -90,4 +90,5 @@ public class FaceRecognitionService {
         Files.write(imagePath, imageBytes);
         return imagePath.toString();
     }
+
 }

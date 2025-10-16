@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/usuarios")
@@ -27,7 +28,7 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(usuCriado);
     }
 
-    @PreAuthorize("hasRole('ONG_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ONG')")
     @GetMapping
     public ResponseEntity<List<UsuarioDto>> findAllUsuarios() {
         List<UsuarioDto> ususEncontrados = usuServ.findAll();
@@ -35,9 +36,9 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.OK).body(ususEncontrados);
     }
 
-    @PreAuthorize("hasRole('ONG_ADMIN') or #id == authentication.principal.id")
+    @PreAuthorize("hasRole('ROLE_ONG')")
     @GetMapping("/{id}")
-    public ResponseEntity<UsuarioDto> findUsuarioById(@PathVariable String id, Authentication authentication) {
+    public ResponseEntity<UsuarioDto> findUsuarioById(@PathVariable UUID id, Authentication authentication) {
         UsuarioDto usuEncontrado = usuServ.findById(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(usuEncontrado);
@@ -51,19 +52,19 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.OK).body(usuEncontrado);
     }
 
-    @PreAuthorize("hasRole('ONG_ADMIN') or #id == authentication.principal.id")
+    @PreAuthorize("hasRole('ROLE_ONG')")
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioDto> updateUsuario(
-            @PathVariable String id,
+            @PathVariable UUID id,
             @RequestBody UsuarioDto usuDto) {
         UsuarioDto usuAtualizado = usuServ.update(id, usuDto);
 
         return ResponseEntity.status(HttpStatus.OK).body(usuAtualizado);
     }
 
-    @PreAuthorize("hasRole('ONG_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ONG')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUsuarioById(@PathVariable String id) {
+    public ResponseEntity<Void> deleteUsuarioById(@PathVariable UUID id) {
         usuServ.deleteById(id);
 
         return ResponseEntity.noContent().build();

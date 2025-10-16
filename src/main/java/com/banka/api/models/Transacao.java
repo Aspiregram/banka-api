@@ -1,61 +1,63 @@
 package com.banka.api.models;
 
+import com.banka.api.enums.Status;
+import com.banka.api.enums.Tipo;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.GenericGenerator;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "transacao")
 public class Transacao {
 
     @Id
-    @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "uuid2")
-    @Column(columnDefinition = "CHAR(36)")
-    private String id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "conta_origem_id")
+    @Column(nullable = false)
     private Conta contaOrigem;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "conta_destino_id")
+    @Column(nullable = false)
     private Conta contaDestino;
 
-    @Column(name = "valor_original", precision = 15, scale = 2, nullable = false)
+    @Column(precision = 15, scale = 2, nullable = false)
     private BigDecimal valorOriginal;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "moeda_origem_id", nullable = false)
     private Moeda moedaOrigem;
 
-    @Column(name = "valor_convertido", precision = 15, scale = 2, nullable = false)
+    @Column(precision = 15, scale = 2, nullable = false)
     private BigDecimal valorConvertido;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "moeda_destino_id", nullable = false)
     private Moeda moedaDestino;
 
-    @Column(name = "taxa_utilizada", precision = 10, scale = 4)
+    @Column(precision = 10, scale = 4, nullable = false)
     private BigDecimal taxaUtilizada;
 
-    @Column(name = "data_transacao")
     private LocalDateTime dataTransacao;
 
-    @Column(name = "tipo", length = 30, nullable = false)
-    private String tipo;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, updatable = false)
+    private Tipo tipo;
 
-    @Column(name = "status", length = 30)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Status status;
 
-    // Campos de auditoria
     @Column(name = "data_criacao", nullable = false, updatable = false)
     private LocalDateTime dataCriacao;
 
@@ -64,15 +66,16 @@ public class Transacao {
 
     @PrePersist
     protected void onCreate() {
+        status = Status.STATUS_PENDENTE;
         dataCriacao = LocalDateTime.now();
 
-        if (dataTransacao == null) {
+        if (dataTransacao == null)
             dataTransacao = LocalDateTime.now();
-        }
     }
 
     @PreUpdate
     protected void onUpdate() {
         ultimaAtualizacao = LocalDateTime.now();
     }
+
 }

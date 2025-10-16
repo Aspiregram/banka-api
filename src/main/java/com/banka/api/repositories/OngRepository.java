@@ -5,9 +5,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface OngRepository extends JpaRepository<Ong, String> {
+public interface OngRepository extends JpaRepository<Ong, UUID> {
 
     boolean existsByEmail(String email);
 

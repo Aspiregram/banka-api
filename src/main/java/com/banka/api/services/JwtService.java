@@ -23,11 +23,10 @@ public class JwtService {
         return Keys.hmacShaKeyFor(segredo.getBytes());
     }
 
-
     public String generateToken(UserDetails userDet) {
         return Jwts.builder()
-                .setSubject(userDet.getUsername()) // O email/login
-                .claim("roles", userDet.getAuthorities()) // Adiciona as permissões
+                .setSubject(userDet.getUsername())
+                .claim("roles", userDet.getAuthorities())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiracao))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
@@ -43,14 +42,12 @@ public class JwtService {
                 .getSubject();
     }
 
-
     public boolean isTokenValid(String token, String username) {
         final String userExtraido = extractUsername(token);
 
         return userExtraido.equals(username)
                 && !isTokenExpired(token);
     }
-
 
     public boolean isTokenExpired(String token) {
         Date exp = Jwts.parserBuilder()
@@ -62,4 +59,5 @@ public class JwtService {
 
         return exp.before(new Date());
     }
+
 }

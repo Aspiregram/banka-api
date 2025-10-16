@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,23 +47,22 @@ public class PaisService {
                 .collect(Collectors.toList());
     }
 
-    public Pais findEntityById(String id) {
+    public PaisDto findById(UUID id) {
+        return toDto(findEntityById(id));
+    }
+
+    private Pais findEntityById(UUID id) {
         return paisRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("País não encontrado"));
     }
 
-    public PaisDto findById(String id) {
-        Pais paisEncontrado = findEntityById(id);
-        return toDto(paisEncontrado);
-    }
-
     @Transactional
-    public PaisDto update(String id, PaisDto paisDto) {
+    public PaisDto update(UUID id, PaisDto paisDto) {
         Pais paisEncontrado = findEntityById(id);
 
-        if (!paisEncontrado.getNome().equals(paisDto.nome()) && paisRepo.existsByNome(paisDto.nome())) {
-            throw new RuntimeException("O novo nome de país já está em uso.");
-        }
+        if (!paisEncontrado.getNome().equals(paisDto.nome()) && paisRepo.existsByNome(paisDto.nome()))
+            throw new RuntimeException("O novo nome de país já está em uso");
+
 
         paisEncontrado.setNome(paisDto.nome());
         paisEncontrado.setIsoCode(paisDto.isoCode());
@@ -72,7 +72,7 @@ public class PaisService {
         return toDto(paisAtualizado);
     }
 
-    public void deleteById(String id) {
+    public void deleteById(UUID id) {
         if (!paisRepo.existsById(id))
             throw new RuntimeException("País não existe");
 
@@ -81,9 +81,9 @@ public class PaisService {
 
     private PaisDto toDto(Pais pais) {
         return new PaisDto(
-                pais.getId(),
                 pais.getNome(),
                 pais.getIsoCode()
         );
     }
+
 }

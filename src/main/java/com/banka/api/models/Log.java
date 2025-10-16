@@ -4,8 +4,9 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.GenericGenerator;
+
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -15,23 +16,21 @@ import java.time.LocalDateTime;
 public class Log {
 
     @Id
-    @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "uuid2")
-    @Column(columnDefinition = "CHAR(36)")
-    private String id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id", nullable = false)
+    @JoinColumn(name = "usuario_id", nullable = false, updatable = false)
     private Usuario usuario;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ong_responsavel_id", nullable = false)
+    @JoinColumn(name = "ong_id", nullable = false, updatable = false)
     private Ong ong;
 
-
-    @Column(name = "data_redefinicao")
+    @Column(name = "data_redefinicao", nullable = false, updatable = false)
     private LocalDateTime dataAlteracao;
 
-    @Column(length = 255)
+    @Column(columnDefinition = "TEXT", nullable = false, updatable = false)
     private String motivo;
+
 }

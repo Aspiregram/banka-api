@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,22 +48,21 @@ public class MoedaService {
                 .collect(Collectors.toList());
     }
 
-    public Moeda findEntityById(String id) {
+    public Moeda findEntityById(UUID id) {
         return moedaRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Moeda não encontrada"));
     }
 
-    public MoedaDto findById(String id) {
-        Moeda moedaEncontrada = findEntityById(id);
-        return toDto(moedaEncontrada);
+    public MoedaDto findById(UUID id) {
+        return toDto(findEntityById(id));
     }
 
     @Transactional
-    public MoedaDto update(String id, MoedaDto moedaDto) {
+    public MoedaDto update(UUID id, MoedaDto moedaDto) {
         Moeda moedaEncontrada = findEntityById(id);
 
         if (!moedaEncontrada.getSigla().equals(moedaDto.sigla()) && moedaRepo.existsBySigla(moedaDto.sigla())) {
-            throw new RuntimeException("A nova sigla já está em uso por outra moeda.");
+            throw new RuntimeException("A nova sigla já está em uso por outra moeda");
         }
 
         moedaEncontrada.setNome(moedaDto.nome());
@@ -75,7 +75,7 @@ public class MoedaService {
         return toDto(moedaAtualizada);
     }
 
-    public void deleteById(String id) {
+    public void deleteById(UUID id) {
         if (!moedaRepo.existsById(id))
             throw new RuntimeException("Moeda não existe");
 
@@ -84,11 +84,11 @@ public class MoedaService {
 
     private MoedaDto toDto(Moeda moeda) {
         return new MoedaDto(
-                moeda.getId(),
                 moeda.getNome(),
                 moeda.getSigla(),
                 moeda.getTaxaConversao(),
-                moeda.getPais() != null ? moeda.getPais().getId() : null
+                moeda.getPais()
         );
     }
+
 }

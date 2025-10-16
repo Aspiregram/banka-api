@@ -4,23 +4,20 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.GenericGenerator;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "conta")
 public class Conta {
 
-    // ID UUID
     @Id
-    @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "uuid2")
-    @Column(columnDefinition = "CHAR(36)")
-    private String id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)
@@ -31,17 +28,15 @@ public class Conta {
     private Moeda moeda;
 
     @Column(precision = 15, scale = 2)
-    private BigDecimal saldo = BigDecimal.ZERO; // Saldo inicial 0
+    private BigDecimal saldo;
 
     @Column(name = "data_criacao", updatable = false)
     private LocalDateTime dataCriacao;
 
     @PrePersist
     protected void onCreate() {
-        if (dataCriacao == null) {
-            dataCriacao = LocalDateTime.now();
-        }
+        saldo = BigDecimal.ZERO;
+        dataCriacao = LocalDateTime.now();
     }
-
 
 }
