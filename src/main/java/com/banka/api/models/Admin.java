@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -19,17 +20,17 @@ import java.util.List;
 public class Admin implements UserDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(length = 30, nullable = false, unique = true)
     private String email;
 
-    @Column(length = 100, nullable = false)
+    @Column(nullable = false)
     private String senha;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 30, nullable = false)
+    @Column(nullable = false)
     private Role role;
 
     @Override

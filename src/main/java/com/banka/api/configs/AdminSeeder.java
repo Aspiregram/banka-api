@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class AdminSeeder implements CommandLineRunner {
+
     private final AdminRepository admRepo;
     private final PasswordEncoder passEncod;
 
