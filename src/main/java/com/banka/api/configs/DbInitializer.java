@@ -206,14 +206,12 @@ public class DbInitializer implements CommandLineRunner {
                             SET v_tipo = NEW.tipo;
                             SET v_valor = NEW.valor_original;
                         
-                            -- Se for uma transferência concluída
                             IF NEW.status = 'CONCLUIDA' THEN
                                 -- Atualiza conta de origem (débito)
                                 UPDATE conta
                                 SET saldo = saldo - NEW.valor_original
                                 WHERE id = NEW.conta_origem_id;
                         
-                                -- Atualiza conta de destino (crédito)
                                 UPDATE conta
                                 SET saldo = saldo + NEW.valor_convertido
                                 WHERE id = NEW.conta_destino_id;
@@ -232,7 +230,6 @@ public class DbInitializer implements CommandLineRunner {
                         BEFORE UPDATE ON conta
                         FOR EACH ROW
                         BEGIN
-                            -- Verifica se o novo saldo ficaria negativo
                             IF NEW.saldo < 0 THEN
                                 SIGNAL SQLSTATE '45000'
                                 SET MESSAGE_TEXT = 'Operação inválida: saldo insuficiente.';
