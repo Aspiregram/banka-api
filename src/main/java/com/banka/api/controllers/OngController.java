@@ -19,15 +19,14 @@ public class OngController {
         this.ongServ = ongServ;
     }
 
-    @PreAuthorize("hasRole('ONG')")
     @PostMapping
-    public ResponseEntity<OngDto> saveOng(@RequestBody OngDto ongDto) {
+    public ResponseEntity<OngDto> registerOng(@RequestBody OngDto ongDto) {
         OngDto ongCriada = ongServ.save(ongDto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(ongCriada);
     }
 
-    @PreAuthorize("hasRole('ONG')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping
     public ResponseEntity<List<OngDto>> findAllOngs() {
         List<OngDto> ongsEncontradas = ongServ.findAll();
@@ -35,35 +34,33 @@ public class OngController {
         return ResponseEntity.status(HttpStatus.OK).body(ongsEncontradas);
     }
 
-    @PreAuthorize("hasRole('ONG')")
     @GetMapping("/{id}")
-    public ResponseEntity<OngDto> findOngById(@PathVariable Long id) {
+    public ResponseEntity<OngDto> findOngById(@PathVariable String id) {
         OngDto ongEncontrada = ongServ.findById(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(ongEncontrada);
     }
 
-    @PreAuthorize("hasRole('USER')")
-    @GetMapping("/{email}")
+    @GetMapping("/email/{email}")
     public ResponseEntity<OngDto> findOngByEmail(@PathVariable String email) {
         OngDto ongEncontrada = ongServ.findByEmail(email);
 
         return ResponseEntity.status(HttpStatus.OK).body(ongEncontrada);
     }
 
-    @PreAuthorize("hasRole('ONG')")
+    @PreAuthorize("hasRole('ONG_ADMIN') or hasRole('ROLE_ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<OngDto> updateOng(
-            @PathVariable Long id,
+            @PathVariable String id,
             @RequestBody OngDto ongDto) {
         OngDto ongAtualizada = ongServ.update(id, ongDto);
 
         return ResponseEntity.status(HttpStatus.OK).body(ongAtualizada);
     }
 
-    @PreAuthorize("hasRole('ONG')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteOngById(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteOngById(@PathVariable String id) {
         ongServ.deleteById(id);
 
         return ResponseEntity.noContent().build();

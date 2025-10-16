@@ -13,52 +13,42 @@ import java.util.List;
 @RequestMapping("/paises")
 public class PaisController {
 
-    private final PaisService paisServ;
+    private final PaisService paisService;
 
-    public PaisController(PaisService paisServ) {
-        this.paisServ = paisServ;
+    public PaisController(PaisService paisService) {
+        this.paisService = paisService;
     }
 
-    @PreAuthorize("hasRole('ONG')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping
-    public ResponseEntity<PaisDto> savePais(@RequestBody PaisDto paisDto) {
-        PaisDto paisCriado = paisServ.save(paisDto);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(paisCriado);
+    public ResponseEntity<PaisDto> createPais(@RequestBody PaisDto paisDto) {
+        PaisDto novoPais = paisService.save(paisDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(novoPais);
     }
 
-    @PreAuthorize("hasRole('ONG')")
     @GetMapping
-    public ResponseEntity<List<PaisDto>> findAllPaises() {
-        List<PaisDto> paisesEncontrados = paisServ.findAll();
-
-        return ResponseEntity.status(HttpStatus.OK).body(paisesEncontrados);
+    public ResponseEntity<List<PaisDto>> getAllPaises() {
+        List<PaisDto> paises = paisService.findAll();
+        return ResponseEntity.ok(paises);
     }
 
-    @PreAuthorize("hasRole('ONG')")
     @GetMapping("/{id}")
-    public ResponseEntity<PaisDto> findPaisById(@PathVariable Long id) {
-        PaisDto paisEncontrado = paisServ.findById(id);
-
-        return ResponseEntity.status(HttpStatus.OK).body(paisEncontrado);
+    public ResponseEntity<PaisDto> getPaisById(@PathVariable String id) {
+        PaisDto pais = paisService.findById(id);
+        return ResponseEntity.ok(pais);
     }
 
-    @PreAuthorize("hasRole('ONG')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<PaisDto> updatePais(
-            @PathVariable Long id,
-            @RequestBody PaisDto paisDto) {
-        PaisDto paisAtualizado = paisServ.update(id, paisDto);
-
-        return ResponseEntity.status(HttpStatus.OK).body(paisAtualizado);
+    public ResponseEntity<PaisDto> updatePais(@PathVariable String id, @RequestBody PaisDto paisDto) {
+        PaisDto paisAtualizado = paisService.update(id, paisDto);
+        return ResponseEntity.ok(paisAtualizado);
     }
 
-    @PreAuthorize("hasRole('ONG')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePaisById(@PathVariable Long id) {
-        paisServ.deleteById(id);
-
+    public ResponseEntity<Void> deletePais(@PathVariable String id) {
+        paisService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
-
 }

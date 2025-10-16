@@ -6,7 +6,10 @@ import com.banka.api.records.OngDto;
 import com.banka.api.repositories.OngRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,6 +24,7 @@ public class OngService {
         this.passEncod = passEncod;
     }
 
+    @Transactional
     public OngDto save(OngDto ongDto) {
         if (ongRepo.existsByEmail(ongDto.email()))
             throw new RuntimeException("ONG já cadastrada");
@@ -28,15 +32,18 @@ public class OngService {
         String senhaCodificada = passEncod.encode(ongDto.senha());
 
         Ong ong = new Ong(
-                ongDto.id(),
+                null,
                 ongDto.nome(),
                 ongDto.email(),
+                ongDto.telefone(),
                 senhaCodificada,
-                Role.ROLE_ONG,
+                Role.ONG_ADMIN,
                 ongDto.pais(),
-                null, // faceHash
-                null, // dataCriacao
-                null  // ultimoLogin
+                BigDecimal.ZERO,
+                null,
+                null,
+                null,
+                null
         );
 
         Ong ongSalva = ongRepo.save(ong);
@@ -55,12 +62,17 @@ public class OngService {
                 .collect(Collectors.toList());
     }
 
-    public OngDto findById(Long id) {
+    public OngDto findById(String id) {
         Ong ongEncontrada = ongRepo.findById(id)
                 .orElseThrow(() ->
                         new RuntimeException("ONG não encontrada"));
 
         return toDto(ongEncontrada);
+    }
+
+    public Ong findEntityById(String id) {
+        return ongRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("ONG não encontrada"));
     }
 
     public OngDto findByEmail(String email) {
@@ -71,25 +83,36 @@ public class OngService {
         return toDto(ongEncontrada);
     }
 
-    public OngDto update(Long id, OngDto ongDto) {
+    @Transactional
+    public OngDto update(String id, OngDto ongDto) {
         Ong ongEncontrada = ongRepo.findById(id)
                 .orElseThrow(() ->
                         new RuntimeException("ONG não encontrada"));
 
         ongEncontrada.setNome(ongDto.nome());
-        ongEncontrada.setEmail(ongDto.email());
-        // Criptografa a senha novamente, caso tenha sido alterada
-        if (ongDto.senha() != null && !ongDto.senha().isBlank()) {
-            ongEncontrada.setSenha(passEncod.encode(ongDto.senha()));
+
+        if (!ongEncontrada.getEmail().equals(ongDto.email()) && ongRepo.existsByEmail(ongDto.email())) {
+            throw new RuntimeException("O novo email já está em uso por outra conta.");
         }
+        ongEncontrada.setEmail(ongDto.email());
+
+        if (ongDto.senha() != null && !ongDto.senha().isEmpty()) {
+            String senhaCodificada = passEncod.encode(ongDto.senha());
+            ongEncontrada.setSenha(senhaCodificada);
+        }
+
+        ongEncontrada.setTelefone(ongDto.telefone());
         ongEncontrada.setPais(ongDto.pais());
+
+
 
         Ong ongAtualizada = ongRepo.save(ongEncontrada);
 
         return toDto(ongAtualizada);
     }
 
-    public void deleteById(Long id) {
+    @Transactional
+    public void deleteById(String id) {
         if (!ongRepo.existsById(id))
             throw new RuntimeException("ONG não existe");
 
@@ -97,15 +120,15 @@ public class OngService {
     }
 
     private OngDto toDto(Ong ong) {
-        // Aqui você pode remover o campo senha do DTO retornado, se quiser
         return new OngDto(
                 ong.getId(),
                 ong.getNome(),
                 ong.getEmail(),
-                null, // ou omitir a senha
+                ong.getTelefone(),
+                null,
                 ong.getRole(),
-                ong.getPais()
+                ong.getPais(),
+                ong.getSaldoGlobal()
         );
     }
-
 }

@@ -4,9 +4,13 @@ import com.banka.api.models.Moeda;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-@Repository
-public interface MoedaRepository extends JpaRepository<Moeda, Long> {
+import java.util.Optional;
 
-    boolean existsByNome(String nome);
+@Repository
+public interface MoedaRepository extends JpaRepository<Moeda, String> {
+
+    boolean existsBySigla(String sigla);
+
+    Optional<Moeda> findBySigla(String sigla);
 
 }

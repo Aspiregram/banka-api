@@ -22,22 +22,13 @@ public class UsersDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // Tenta encontrar uma ONG primeiro
-        if (ongRepo.existsByEmail(username)) {
-            return ongRepo.findByEmail(username)
-                    .orElseThrow(() -> new UsernameNotFoundException("ONG não encontrada"));
-        }
 
-        // Caso contrário, tenta encontrar um usuário pelo nome.sobrenome
-        String[] partes = username.split("\\.", 2); // Correção aqui
-        if (partes.length != 2) {
-            throw new UsernameNotFoundException("Formato de usuário inválido: " + username);
-        }
-
-        String nome = partes[0];
-        String sobrenome = partes[1];
-
-        return usuRepo.findByNomeAndSobrenome(nome, sobrenome)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
+        // 1. Tenta encontrar uma ONG pelo email
+        return ongRepo.findByEmail(username)
+                .<UserDetails>map(ong -> ong) // Mapeia a ONG encontrada para UserDetails
+                // 2. Se não encontrar a ONG, tenta encontrar um Usuário pelo email
+                .or(() -> usuRepo.findByEmail(username).map(usuario -> usuario))
+                // 3. Se não encontrar nenhum dos dois, lança exceção
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário ou ONG não encontrado para o identificador: " + username));
     }
 }

@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.GenericGenerator;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,12 +18,14 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "usuarios")
+@Table(name = "usuario")
 public class Usuario implements UserDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    @Column(columnDefinition = "CHAR(36)")
+    private String id;
 
     @Column(length = 30, nullable = false)
     private String nome;
@@ -30,26 +33,36 @@ public class Usuario implements UserDetails {
     @Column(length = 30, nullable = false)
     private String sobrenome;
 
-    @Column(length = 50, nullable = false, unique = true)
+    @Column(length = 100, unique = true)
+    private String email;
+
+    @Column(length = 255, nullable = false)
     private String senha;
+
+    @Column(length = 50)
+    private String documento;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 30, nullable = false)
     private Role role;
 
-    @OneToOne
-    @JoinColumn(name = "pais_id")
-    private Pais pais;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pais_origem_id")
+    private Pais paisOrigem;
 
-    @OneToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pais_residencia_id")
+    private Pais paisResidencia;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ong_id")
     private Ong ong;
 
-    // Novo campo para armazenar o hash facial
-    @Column(length = 255)
+    private Boolean ativo = true;
+
+    @Column(name = "face_hash", length = 255)
     private String faceHash;
 
-    // Campos de auditoria
     @Column(name = "data_criacao", nullable = false, updatable = false)
     private LocalDateTime dataCriacao;
 
@@ -58,7 +71,9 @@ public class Usuario implements UserDetails {
 
     @PrePersist
     protected void onCreate() {
-        dataCriacao = LocalDateTime.now();
+        if (dataCriacao == null) {
+            dataCriacao = LocalDateTime.now();
+        }
     }
 
     @Override
@@ -75,17 +90,17 @@ public class Usuario implements UserDetails {
     @Override
     @Transient
     public String getUsername() {
-        return nome + "." + sobrenome;
+        return email;
     }
 
     @Override
     public boolean isAccountNonExpired() {
-        return true;
+        return ativo;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return ativo;
     }
 
     @Override
@@ -95,7 +110,6 @@ public class Usuario implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return ativo;
     }
-
 }

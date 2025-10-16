@@ -3,11 +3,12 @@ package com.banka.api.records;
 import com.banka.api.enums.Role;
 import com.banka.api.models.Ong;
 import com.banka.api.models.Pais;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public record UsuarioDto(
-        Long id,
+        String id,
 
         @NotBlank(message = "Nome é obrigatório")
         @Size(max = 30)
@@ -17,17 +18,23 @@ public record UsuarioDto(
         @Size(max = 30)
         String sobrenome,
 
-        // Omitir senha do DTO para segurança
+        @Email
+        @NotBlank(message = "Email é obrigatório")
+        @Size(max = 100)
+        String email,
+
         String senha,
 
-        @NotBlank(message = "Papel é obrigatório")
-        @Size(max = 30)
+        @NotBlank(message = "Documento é obrigatório")
+        @Size(max = 50)
+        String documento,
+
         Role role,
 
-        @NotBlank(message = "País é obrigatório")
-        Pais pais,
+        Pais paisOrigem,
 
-        @NotBlank(message = "ONG é obrigatória")
+        Pais paisResidencia,
+
         Ong ong
 ) {
 }

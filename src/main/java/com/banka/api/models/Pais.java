@@ -4,45 +4,32 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
+import org.hibernate.annotations.GenericGenerator;
 import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "paises")
+@Table(name = "pais")
 public class Pais {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    @Column(columnDefinition = "CHAR(36)")
+    private String id;
 
-    @Column(length = 50, nullable = false, unique = true)
+    @Column(length = 100, nullable = false, unique = true) // Tamanho ajustado para 100 do BD
     private String nome;
 
-    @Column(columnDefinition = "CHAR(2)", nullable = false, unique = true)
+    @Column(columnDefinition = "CHAR(3)", nullable = false, unique = true) // Ajustado para CHAR(3) do BD
     private String isoCode;
 
-    @ManyToMany(mappedBy = "paises")
+
+    @OneToMany(mappedBy = "pais", fetch = FetchType.LAZY)
     private List<Moeda> moedas;
 
-    // Campos de auditoria
-    @Column(name = "data_criacao", nullable = false, updatable = false)
-    private LocalDateTime dataCriacao;
 
-    @Column(name = "ultima_atualizacao")
-    private LocalDateTime ultimaAtualizacao;
-
-    @PrePersist
-    protected void onCreate() {
-        dataCriacao = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        ultimaAtualizacao = LocalDateTime.now();
-    }
 
 }

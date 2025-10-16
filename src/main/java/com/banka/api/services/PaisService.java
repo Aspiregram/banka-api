@@ -4,6 +4,7 @@ import com.banka.api.models.Pais;
 import com.banka.api.records.PaisDto;
 import com.banka.api.repositories.PaisRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,17 +18,16 @@ public class PaisService {
         this.paisRepo = paisRepo;
     }
 
+    @Transactional
     public PaisDto save(PaisDto paisDto) {
         if (paisRepo.existsByNome(paisDto.nome()))
             throw new RuntimeException("País já cadastrado");
 
         Pais pais = new Pais(
-                paisDto.id(),
+                null,
                 paisDto.nome(),
                 paisDto.isoCode(),
-                paisDto.moedas(),
-                null, // dataCriacao
-                null  // ultimaAtualizacao
+                null
         );
 
         Pais paisSalvo = paisRepo.save(pais);
@@ -46,29 +46,33 @@ public class PaisService {
                 .collect(Collectors.toList());
     }
 
-    public PaisDto findById(Long id) {
-        Pais paisEncontrado = paisRepo.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("País não encontrado"));
+    public Pais findEntityById(String id) {
+        return paisRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("País não encontrado"));
+    }
 
+    public PaisDto findById(String id) {
+        Pais paisEncontrado = findEntityById(id);
         return toDto(paisEncontrado);
     }
 
-    public PaisDto update(Long id, PaisDto paisDto) {
-        Pais paisEncontrado = paisRepo.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("País não encontrado"));
+    @Transactional
+    public PaisDto update(String id, PaisDto paisDto) {
+        Pais paisEncontrado = findEntityById(id);
+
+        if (!paisEncontrado.getNome().equals(paisDto.nome()) && paisRepo.existsByNome(paisDto.nome())) {
+            throw new RuntimeException("O novo nome de país já está em uso.");
+        }
 
         paisEncontrado.setNome(paisDto.nome());
         paisEncontrado.setIsoCode(paisDto.isoCode());
-        paisEncontrado.setMoedas(paisDto.moedas());
 
         Pais paisAtualizado = paisRepo.save(paisEncontrado);
 
         return toDto(paisAtualizado);
     }
 
-    public void deleteById(Long id) {
+    public void deleteById(String id) {
         if (!paisRepo.existsById(id))
             throw new RuntimeException("País não existe");
 
@@ -79,9 +83,7 @@ public class PaisService {
         return new PaisDto(
                 pais.getId(),
                 pais.getNome(),
-                pais.getIsoCode(),
-                pais.getMoedas()
+                pais.getIsoCode()
         );
     }
-
 }

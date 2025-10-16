@@ -4,45 +4,36 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
+import org.hibernate.annotations.GenericGenerator;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "moedas")
+@Table(name = "moeda") // Adicionando o nome da tabela
 public class Moeda {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    @Column(columnDefinition = "CHAR(36)")
+    private String id; // ID corrigido para String/UUID
 
-    @Column(length = 30, nullable = false, unique = true)
+    @Column(length = 50, nullable = false)
     private String nome;
 
     @Column(columnDefinition = "CHAR(3)", nullable = false, unique = true)
     private String sigla;
 
-    @ManyToMany(mappedBy = "moedas")
-    private List<Pais> paises;
+    // CAMPO FALTANTE: Taxa de Conversão, essencial para o seu sistema de câmbio
+    @Column(name = "taxa_conversao", precision = 10, scale = 4, nullable = false)
+    private BigDecimal taxaConversao;
 
-    // Campos de auditoria
-    @Column(name = "data_criacao", nullable = false, updatable = false)
-    private LocalDateTime dataCriacao;
-
-    @Column(name = "ultima_atualizacao")
-    private LocalDateTime ultimaAtualizacao;
-
-    @PrePersist
-    protected void onCreate() {
-        dataCriacao = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        ultimaAtualizacao = LocalDateTime.now();
-    }
+    // CORREÇÃO: Moeda pertence a um País (ManyToOne)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pais_id") // Nome da FK na tabela 'moeda'
+    private Pais pais;
 
 }

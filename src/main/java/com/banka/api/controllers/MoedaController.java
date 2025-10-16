@@ -19,7 +19,7 @@ public class MoedaController {
         this.moedaServ = moedaServ;
     }
 
-    @PreAuthorize("hasRole('ONG')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping
     public ResponseEntity<MoedaDto> saveMoeda(@RequestBody MoedaDto moedaDto) {
         MoedaDto moedaCriada = moedaServ.save(moedaDto);
@@ -27,7 +27,6 @@ public class MoedaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(moedaCriada);
     }
 
-    @PreAuthorize("hasRole('ONG')")
     @GetMapping
     public ResponseEntity<List<MoedaDto>> findAllMoedas() {
         List<MoedaDto> moedasEncontradas = moedaServ.findAll();
@@ -35,27 +34,26 @@ public class MoedaController {
         return ResponseEntity.status(HttpStatus.OK).body(moedasEncontradas);
     }
 
-    @PreAuthorize("hasRole('ONG')")
     @GetMapping("/{id}")
-    public ResponseEntity<MoedaDto> findMoedaById(@PathVariable Long id) {
+    public ResponseEntity<MoedaDto> findMoedaById(@PathVariable String id) {
         MoedaDto moedaEncontrada = moedaServ.findById(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(moedaEncontrada);
     }
 
-    @PreAuthorize("hasRole('ONG')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<MoedaDto> updateMoeda(
-            @PathVariable Long id,
+            @PathVariable String id,
             @RequestBody MoedaDto moedaDto) {
         MoedaDto moedaAtualizada = moedaServ.update(id, moedaDto);
 
         return ResponseEntity.status(HttpStatus.OK).body(moedaAtualizada);
     }
 
-    @PreAuthorize("hasRole('ONG')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteMoedaById(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteMoedaById(@PathVariable String id) {
         moedaServ.deleteById(id);
 
         return ResponseEntity.noContent().build();

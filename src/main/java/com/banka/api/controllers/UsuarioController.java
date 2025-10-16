@@ -5,6 +5,7 @@ import com.banka.api.services.UsuarioService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,7 +20,6 @@ public class UsuarioController {
         this.usuServ = usuServ;
     }
 
-    @PreAuthorize("hasRole('ONG')")
     @PostMapping
     public ResponseEntity<UsuarioDto> saveUsuario(@RequestBody UsuarioDto usuDto) {
         UsuarioDto usuCriado = usuServ.save(usuDto);
@@ -27,7 +27,7 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(usuCriado);
     }
 
-    @PreAuthorize("hasRole('ONG')")
+    @PreAuthorize("hasRole('ONG_ADMIN')")
     @GetMapping
     public ResponseEntity<List<UsuarioDto>> findAllUsuarios() {
         List<UsuarioDto> ususEncontrados = usuServ.findAll();
@@ -35,40 +35,37 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.OK).body(ususEncontrados);
     }
 
-    @PreAuthorize("hasRole('ONG')")
+    @PreAuthorize("hasRole('ONG_ADMIN') or #id == authentication.principal.id")
     @GetMapping("/{id}")
-    public ResponseEntity<UsuarioDto> findUsuarioById(@PathVariable Long id) {
+    public ResponseEntity<UsuarioDto> findUsuarioById(@PathVariable String id, Authentication authentication) {
         UsuarioDto usuEncontrado = usuServ.findById(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(usuEncontrado);
     }
 
-    @PreAuthorize("hasAnyRole('ONG','USER')")
-    @GetMapping("/{nome}-{sobrenome}")
-    public ResponseEntity<UsuarioDto> findUsuarioByUsername(
-            @PathVariable String nome,
-            @PathVariable String sobrenome) {
-        UsuarioDto usuEncontrado = usuServ.findByUsername(nome, sobrenome);
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/email/{email}")
+    public ResponseEntity<UsuarioDto> findUsuarioByEmail(@PathVariable String email) {
+        UsuarioDto usuEncontrado = usuServ.findByEmail(email);
 
         return ResponseEntity.status(HttpStatus.OK).body(usuEncontrado);
     }
 
-    @PreAuthorize("hasRole('ONG')")
+    @PreAuthorize("hasRole('ONG_ADMIN') or #id == authentication.principal.id")
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioDto> updateUsuario(
-            @PathVariable Long id,
+            @PathVariable String id,
             @RequestBody UsuarioDto usuDto) {
         UsuarioDto usuAtualizado = usuServ.update(id, usuDto);
 
         return ResponseEntity.status(HttpStatus.OK).body(usuAtualizado);
     }
 
-    @PreAuthorize("hasRole('ONG')")
+    @PreAuthorize("hasRole('ONG_ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUsuarioById(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteUsuarioById(@PathVariable String id) {
         usuServ.deleteById(id);
 
         return ResponseEntity.noContent().build();
     }
-
 }

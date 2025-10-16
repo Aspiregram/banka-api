@@ -19,15 +19,15 @@ public class TransacaoController {
         this.transServ = transServ;
     }
 
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ONG_ADMIN')")
     @PostMapping
-    public ResponseEntity<TransacaoDto> saveTransacao(@RequestBody TransacaoDto logDto) {
-        TransacaoDto transCriada = transServ.save(logDto);
+    public ResponseEntity<TransacaoDto> realizarTransacao(@RequestBody TransacaoDto transDto) {
+        TransacaoDto transCriada = transServ.realizarTransacao(transDto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(transCriada);
     }
 
-    @PreAuthorize("hasAnyRole('ONG','USER')")
+    @PreAuthorize("hasAnyRole('ONG_ADMIN', 'ROLE_ADMIN', 'ROLE_USER')")
     @GetMapping
     public ResponseEntity<List<TransacaoDto>> findAllTransacoes() {
         List<TransacaoDto> transasEncontradas = transServ.findAll();
@@ -35,9 +35,9 @@ public class TransacaoController {
         return ResponseEntity.status(HttpStatus.OK).body(transasEncontradas);
     }
 
-    @PreAuthorize("hasAnyRole('ONG','USER')")
+    @PreAuthorize("hasAnyRole('ONG_ADMIN', 'ROLE_ADMIN', 'ROLE_USER')")
     @GetMapping("/{id}")
-    public ResponseEntity<TransacaoDto> findTransacaoById(@PathVariable Long id) {
+    public ResponseEntity<TransacaoDto> findTransacaoById(@PathVariable String id) {
         TransacaoDto transEncontrada = transServ.findById(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(transEncontrada);

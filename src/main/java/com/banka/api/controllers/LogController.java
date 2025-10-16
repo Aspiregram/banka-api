@@ -19,7 +19,7 @@ public class LogController {
         this.logServ = logServ;
     }
 
-    @PreAuthorize("hasRole('ONG')")
+    @PreAuthorize("hasRole('ONG_ADMIN')")
     @PostMapping
     public ResponseEntity<LogDto> saveLog(@RequestBody LogDto logDto) {
         LogDto logCriado = logServ.save(logDto);
@@ -27,7 +27,7 @@ public class LogController {
         return ResponseEntity.status(HttpStatus.CREATED).body(logCriado);
     }
 
-    @PreAuthorize("hasRole('ONG')")
+    @PreAuthorize("hasRole('ONG_ADMIN') or hasRole('ROLE_ADMIN')")
     @GetMapping
     public ResponseEntity<List<LogDto>> findAllLogs() {
         List<LogDto> logsEncontrados = logServ.findAll();
@@ -35,30 +35,12 @@ public class LogController {
         return ResponseEntity.status(HttpStatus.OK).body(logsEncontrados);
     }
 
-    @PreAuthorize("hasRole('ONG')")
+    @PreAuthorize("hasRole('ONG_ADMIN') or hasRole('ROLE_ADMIN')")
     @GetMapping("/{id}")
-    public ResponseEntity<LogDto> findLogById(@PathVariable Long id) {
+    public ResponseEntity<LogDto> findLogById(@PathVariable String id) {
         LogDto logEncontrado = logServ.findById(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(logEncontrado);
-    }
-
-    @PreAuthorize("hasRole('ONG')")
-    @PutMapping("/{id}")
-    public ResponseEntity<LogDto> updateLog(
-            @PathVariable Long id,
-            @RequestBody LogDto logDto) {
-        LogDto logAtualizado = logServ.update(id, logDto);
-
-        return ResponseEntity.status(HttpStatus.OK).body(logAtualizado);
-    }
-
-    @PreAuthorize("hasRole('ONG')")
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteLogById(@PathVariable Long id) {
-        logServ.deleteById(id);
-
-        return ResponseEntity.noContent().build();
     }
 
 }

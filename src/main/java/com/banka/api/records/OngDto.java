@@ -5,27 +5,29 @@ import com.banka.api.models.Pais;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import java.math.BigDecimal;
 
 public record OngDto(
-        Long id,
+        String id,
 
         @NotBlank(message = "Nome é obrigatório")
-        @Size(max = 50)
+        @Size(max = 120)
         String nome,
 
         @Email
         @NotBlank(message = "Email é obrigatório")
-        @Size(max = 30)
+        @Size(max = 100)
         String email,
 
-        // Omitir senha do DTO para segurança
+        String telefone, // Novo campo
+
         String senha,
 
         @NotBlank(message = "Papel é obrigatório")
-        @Size(max = 30)
         Role role,
 
-        @NotBlank(message = "País é obrigatório")
-        Pais pais
+        Pais pais,
+
+        BigDecimal saldoGlobal
 ) {
 }

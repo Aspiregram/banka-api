@@ -5,10 +5,11 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.GenericGenerator;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -17,40 +18,49 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "ongs")
+@Table(name = "ong")
 public class Ong implements UserDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    @Column(columnDefinition = "CHAR(36)")
+    private String id;
 
-    @Column(length = 50, nullable = false)
+    @Column(length = 120, nullable = false)
     private String nome;
 
-    @Column(length = 30, nullable = false, unique = true)
+    @Column(length = 100, nullable = false, unique = true)
     private String email;
 
-    @Column(length = 50, nullable = false)
+    @Column(length = 30)
+    private String telefone;
+
+    @Column(length = 255, nullable = false)
     private String senha;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 30, nullable = false)
     private Role role;
 
-    @OneToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pais_id")
     private Pais pais;
 
-    // Novo campo para armazenar o hash facial
+    @Column(name = "saldo_global", precision = 15, scale = 2)
+    private BigDecimal saldoGlobal;
+
     @Column(length = 255)
     private String faceHash;
 
-    // Campos de auditoria
     @Column(name = "data_criacao", nullable = false, updatable = false)
     private LocalDateTime dataCriacao;
 
     @Column(name = "ultimo_login")
     private LocalDateTime ultimoLogin;
+
+    @OneToMany(mappedBy = "ong", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Usuario> usuarios;
 
     @PrePersist
     protected void onCreate() {
@@ -93,5 +103,4 @@ public class Ong implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
-
 }
