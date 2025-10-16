@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/transacoes")
@@ -19,28 +20,28 @@ public class TransacaoController {
         this.transServ = transServ;
     }
 
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ONG')")
     @PostMapping
-    public ResponseEntity<TransacaoDto> saveTransacao(@RequestBody TransacaoDto logDto) {
-        TransacaoDto transCriada = transServ.save(logDto);
+    public ResponseEntity<TransacaoDto> realizarTransacao(@RequestBody TransacaoDto transDto) {
+        TransacaoDto transCriada = transServ.makeTransaction(transDto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(transCriada);
     }
 
-    @PreAuthorize("hasAnyRole('ONG','USER')")
+    @PreAuthorize("hasAnyRole('ROLE_ONG', 'ROLE_USER')")
     @GetMapping
     public ResponseEntity<List<TransacaoDto>> findAllTransacoes() {
         List<TransacaoDto> transasEncontradas = transServ.findAll();
 
-        return ResponseEntity.status(HttpStatus.FOUND).body(transasEncontradas);
+        return ResponseEntity.status(HttpStatus.OK).body(transasEncontradas);
     }
 
-    @PreAuthorize("hasAnyRole('ONG','USER')")
+    @PreAuthorize("hasAnyRole('ROLE_ONG', 'ROLE_USER')")
     @GetMapping("/{id}")
-    public ResponseEntity<TransacaoDto> findTransacaoById(@PathVariable Long id) {
+    public ResponseEntity<TransacaoDto> findTransacaoById(@PathVariable UUID id) {
         TransacaoDto transEncontrada = transServ.findById(id);
 
-        return ResponseEntity.status(HttpStatus.FOUND).body(transEncontrada);
+        return ResponseEntity.status(HttpStatus.OK).body(transEncontrada);
     }
 
 }

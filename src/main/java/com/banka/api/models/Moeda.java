@@ -5,7 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.math.BigDecimal;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -14,16 +15,21 @@ import java.util.List;
 public class Moeda {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
-    @Column(length = 30, nullable = false, unique = true)
+    @Column(length = 50, nullable = false)
     private String nome;
 
     @Column(columnDefinition = "CHAR(3)", nullable = false, unique = true)
     private String sigla;
 
-    @ManyToMany(mappedBy = "moedas")
-    private List<Pais> paises;
+    @Column(precision = 10, scale = 4, nullable = false)
+    private BigDecimal taxaConversao;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pais_id")
+    @Column(nullable = false)
+    private Pais pais;
 
 }

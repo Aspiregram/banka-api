@@ -1,13 +1,14 @@
 package com.banka.api.services;
 
-import com.banka.api.enums.Role;
 import com.banka.api.models.Ong;
 import com.banka.api.records.OngDto;
 import com.banka.api.repositories.OngRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,6 +22,7 @@ public class OngService {
         this.passEncod = passEncod;
     }
 
+    @Transactional
     public OngDto save(OngDto ongDto) {
         if (ongRepo.existsByEmail(ongDto.email()))
             throw new RuntimeException("ONG já cadastrada");
@@ -28,12 +30,18 @@ public class OngService {
         String senhaCodificada = passEncod.encode(ongDto.senha());
 
         Ong ong = new Ong(
-                ongDto.id(),
+                null,
                 ongDto.nome(),
                 ongDto.email(),
                 senhaCodificada,
-                Role.ROLE_ONG,
-                ongDto.pais()
+                ongDto.telefone(),
+                null,
+                ongDto.pais(),
+                null,
+                null,
+                null,
+                null,
+                null
         );
 
         Ong ongSalva = ongRepo.save(ong);
@@ -52,12 +60,13 @@ public class OngService {
                 .collect(Collectors.toList());
     }
 
-    public OngDto findById(Long id) {
-        Ong ongEncontrada = ongRepo.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("ONG não encontrada"));
+    public OngDto findById(UUID id) {
+        return toDto(findEntityById(id));
+    }
 
-        return toDto(ongEncontrada);
+    private Ong findEntityById(UUID id) {
+        return ongRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("ONG não encontrada"));
     }
 
     public OngDto findByEmail(String email) {
@@ -68,14 +77,25 @@ public class OngService {
         return toDto(ongEncontrada);
     }
 
-    public OngDto update(Long id, OngDto ongDto) {
-        Ong ongEncontrada = ongRepo.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("ONG não encontrada"));
+    @Transactional
+    public OngDto update(UUID id, OngDto ongDto) {
+        Ong ongEncontrada = findEntityById(id);
 
         ongEncontrada.setNome(ongDto.nome());
+
+        if (!ongEncontrada.getEmail().equals(ongDto.email()) && ongRepo.existsByEmail(ongDto.email()))
+            throw new RuntimeException("O novo email já está em uso por outra conta");
+
+
         ongEncontrada.setEmail(ongDto.email());
-        ongEncontrada.setSenha(ongDto.senha());
+
+        if (ongDto.senha() != null && !ongDto.senha().isEmpty()) {
+            String senhaCodificada = passEncod.encode(ongDto.senha());
+
+            ongEncontrada.setSenha(senhaCodificada);
+        }
+
+        ongEncontrada.setTelefone(ongDto.telefone());
         ongEncontrada.setPais(ongDto.pais());
 
         Ong ongAtualizada = ongRepo.save(ongEncontrada);
@@ -83,7 +103,8 @@ public class OngService {
         return toDto(ongAtualizada);
     }
 
-    public void deleteById(Long id) {
+    @Transactional
+    public void deleteById(UUID id) {
         if (!ongRepo.existsById(id))
             throw new RuntimeException("ONG não existe");
 
@@ -92,12 +113,12 @@ public class OngService {
 
     private OngDto toDto(Ong ong) {
         return new OngDto(
-                ong.getId(),
                 ong.getNome(),
                 ong.getEmail(),
                 ong.getSenha(),
-                ong.getRole(),
-                ong.getPais()
+                ong.getTelefone(),
+                ong.getPais(),
+                ong.getSaldoGlobal()
         );
     }
 

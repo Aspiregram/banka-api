@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -14,21 +15,16 @@ import java.util.List;
 public class Pais {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
-    @Column(length = 50, nullable = false, unique = true)
+    @Column(length = 100, nullable = false, unique = true)
     private String nome;
 
-    @Column(columnDefinition = "CHAR(2)", nullable = false, unique = true)
+    @Column(columnDefinition = "CHAR(3)", nullable = false, unique = true)
     private String isoCode;
 
-    @ManyToMany
-    @JoinTable(
-            name = "Pais_Moeda",
-            joinColumns = @JoinColumn(name = "pais_id"),
-            inverseJoinColumns = @JoinColumn(name = "moeda_id")
-    )
+    @OneToMany(mappedBy = "pais", fetch = FetchType.LAZY)
     private List<Moeda> moedas;
 
 }

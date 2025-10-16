@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/moedas")
@@ -19,7 +20,7 @@ public class MoedaController {
         this.moedaServ = moedaServ;
     }
 
-    @PreAuthorize("hasRole('ONG')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping
     public ResponseEntity<MoedaDto> saveMoeda(@RequestBody MoedaDto moedaDto) {
         MoedaDto moedaCriada = moedaServ.save(moedaDto);
@@ -27,35 +28,33 @@ public class MoedaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(moedaCriada);
     }
 
-    @PreAuthorize("hasRole('ONG')")
     @GetMapping
     public ResponseEntity<List<MoedaDto>> findAllMoedas() {
         List<MoedaDto> moedasEncontradas = moedaServ.findAll();
 
-        return ResponseEntity.status(HttpStatus.FOUND).body(moedasEncontradas);
+        return ResponseEntity.status(HttpStatus.OK).body(moedasEncontradas);
     }
 
-    @PreAuthorize("hasRole('ONG')")
     @GetMapping("/{id}")
-    public ResponseEntity<MoedaDto> findMoedaById(@PathVariable Long id) {
+    public ResponseEntity<MoedaDto> findMoedaById(@PathVariable UUID id) {
         MoedaDto moedaEncontrada = moedaServ.findById(id);
 
-        return ResponseEntity.status(HttpStatus.FOUND).body(moedaEncontrada);
+        return ResponseEntity.status(HttpStatus.OK).body(moedaEncontrada);
     }
 
-    @PreAuthorize("hasRole('ONG')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<MoedaDto> updateMoeda(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @RequestBody MoedaDto moedaDto) {
         MoedaDto moedaAtualizada = moedaServ.update(id, moedaDto);
 
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(moedaAtualizada);
+        return ResponseEntity.status(HttpStatus.OK).body(moedaAtualizada);
     }
 
-    @PreAuthorize("hasRole('ONG')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteMoedaById(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteMoedaById(@PathVariable UUID id) {
         moedaServ.deleteById(id);
 
         return ResponseEntity.noContent().build();

@@ -4,8 +4,10 @@ import com.banka.api.models.Log;
 import com.banka.api.records.LogDto;
 import com.banka.api.repositories.LogRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -17,12 +19,14 @@ public class LogService {
         this.logRepo = logRepo;
     }
 
+    @Transactional
     public LogDto save(LogDto logDto) {
         Log log = new Log(
-                logDto.id(),
+                null,
                 logDto.usuario(),
                 logDto.ong(),
-                logDto.dataAlteracao()
+                logDto.dataAlteracao(),
+                logDto.motivo()
         );
 
         Log logSalvo = logRepo.save(log);
@@ -34,14 +38,14 @@ public class LogService {
         if (logRepo.findAll().isEmpty())
             throw new RuntimeException("Não há nenhum log registrado");
 
-        List<Log> loges = logRepo.findAll();
+        List<Log> logs = logRepo.findAll();
 
-        return loges.stream()
+        return logs.stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
 
-    public LogDto findById(Long id) {
+    public LogDto findById(UUID id) {
         Log logEncontrado = logRepo.findById(id)
                 .orElseThrow(() ->
                         new RuntimeException("Log não encontrado"));
@@ -49,33 +53,12 @@ public class LogService {
         return toDto(logEncontrado);
     }
 
-    public LogDto update(Long id, LogDto logDto) {
-        Log logEncontrado = logRepo.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Log não encontrado"));
-
-        logEncontrado.setUsuario(logDto.usuario());
-        logEncontrado.setOng(logDto.ong());
-        logEncontrado.setDataAlteracao(logDto.dataAlteracao());
-
-        Log logAtualizado = logRepo.save(logEncontrado);
-
-        return toDto(logAtualizado);
-    }
-
-    public void deleteById(Long id) {
-        if (!logRepo.existsById(id))
-            throw new RuntimeException("Log não existe");
-
-        logRepo.deleteById(id);
-    }
-
     private LogDto toDto(Log log) {
         return new LogDto(
-                log.getId(),
                 log.getUsuario(),
                 log.getOng(),
-                log.getDataAlteracao()
+                log.getDataAlteracao(),
+                log.getMotivo()
         );
     }
 

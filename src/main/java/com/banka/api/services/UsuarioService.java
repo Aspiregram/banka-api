@@ -1,13 +1,14 @@
 package com.banka.api.services;
 
-import com.banka.api.enums.Role;
 import com.banka.api.models.Usuario;
 import com.banka.api.records.UsuarioDto;
 import com.banka.api.repositories.UsuarioRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,18 +22,28 @@ public class UsuarioService {
         this.passEncod = passEncod;
     }
 
+    @Transactional
     public UsuarioDto save(UsuarioDto usuDto) {
+        if (usuRepo.existsByEmail(usuDto.email()))
+            throw new RuntimeException("Usuário já cadastrado com este email");
+
         String senhaCodificada = passEncod.encode(usuDto.senha());
 
         Usuario usu = new Usuario(
-                usuDto.id(),
+                null,
                 usuDto.nome(),
                 usuDto.sobrenome(),
                 usuDto.email(),
                 senhaCodificada,
-                Role.ROLE_USER,
-                usuDto.pais(),
-                usuDto.ong()
+                usuDto.documento(),
+                null,
+                usuDto.paisOrigem(),
+                usuDto.paisResidencia(),
+                usuDto.ong(),
+                null,
+                null,
+                null,
+                null
         );
 
         Usuario usuSalvo = usuRepo.save(usu);
@@ -51,12 +62,13 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
-    public UsuarioDto findById(Long id) {
-        Usuario usuEncontrado = usuRepo.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Usuário não encontrado"));
+    private Usuario findEntityById(UUID id) {
+        return usuRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+    }
 
-        return toDto(usuEncontrado);
+    public UsuarioDto findById(UUID id) {
+        return toDto(findEntityById(id));
     }
 
     public UsuarioDto findByEmail(String email) {
@@ -67,15 +79,21 @@ public class UsuarioService {
         return toDto(usuEncontrado);
     }
 
-    public UsuarioDto update(Long id, UsuarioDto usuDto) {
-        Usuario usuEncontrado = usuRepo.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Usuário não encontrado"));
+    @Transactional
+    public UsuarioDto update(UUID id, UsuarioDto usuDto) {
+        Usuario usuEncontrado = findEntityById(id);
 
         usuEncontrado.setNome(usuDto.nome());
         usuEncontrado.setSobrenome(usuDto.sobrenome());
-        usuEncontrado.setSenha(usuDto.senha());
-        usuEncontrado.setPais(usuDto.pais());
+        usuEncontrado.setEmail(usuDto.email());
+
+        if (usuDto.senha() != null && !usuDto.senha().isEmpty())
+            usuEncontrado.setSenha(passEncod.encode(usuDto.senha()));
+
+
+        usuEncontrado.setDocumento(usuDto.documento());
+        usuEncontrado.setPaisOrigem(usuDto.paisOrigem());
+        usuEncontrado.setPaisResidencia(usuDto.paisResidencia());
         usuEncontrado.setOng(usuDto.ong());
 
         Usuario usuAtualizado = usuRepo.save(usuEncontrado);
@@ -83,7 +101,7 @@ public class UsuarioService {
         return toDto(usuAtualizado);
     }
 
-    public void deleteById(Long id) {
+    public void deleteById(UUID id) {
         if (!usuRepo.existsById(id))
             throw new RuntimeException("Usuário não existe");
 
@@ -92,13 +110,13 @@ public class UsuarioService {
 
     private UsuarioDto toDto(Usuario usu) {
         return new UsuarioDto(
-                usu.getId(),
                 usu.getNome(),
                 usu.getSobrenome(),
                 usu.getEmail(),
                 usu.getSenha(),
-                usu.getRole(),
-                usu.getPais(),
+                usu.getDocumento(),
+                usu.getPaisOrigem(),
+                usu.getPaisResidencia(),
                 usu.getOng()
         );
     }

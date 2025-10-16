@@ -9,6 +9,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -31,13 +33,36 @@ public class Ong implements UserDetails {
     @Column(length = 100, nullable = false)
     private String senha;
 
-    @Enumerated(EnumType.STRING)
     @Column(length = 30, nullable = false)
+    private String telefone;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, updatable = false)
     private Role role;
 
     @OneToOne
     @JoinColumn(name = "pais_id")
     private Pais pais;
+
+    @Column(precision = 15, scale = 2)
+    private BigDecimal saldoGlobal;
+
+    @OneToMany(mappedBy = "ong", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Usuario> usuarios;
+
+    private String faceHash;
+
+    @Column(name = "data_criacao", nullable = false, updatable = false)
+    private LocalDateTime dataCriacao;
+
+    @Column(name = "ultimo_login")
+    private LocalDateTime ultimoLogin;
+
+    @PrePersist
+    protected void onCreate() {
+        role = Role.ROLE_ONG;
+        dataCriacao = LocalDateTime.now();
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

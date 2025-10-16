@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/logs")
@@ -19,7 +20,7 @@ public class LogController {
         this.logServ = logServ;
     }
 
-    @PreAuthorize("hasRole('ONG')")
+    @PreAuthorize("hasRole('ROLE_ONG')")
     @PostMapping
     public ResponseEntity<LogDto> saveLog(@RequestBody LogDto logDto) {
         LogDto logCriado = logServ.save(logDto);
@@ -27,38 +28,20 @@ public class LogController {
         return ResponseEntity.status(HttpStatus.CREATED).body(logCriado);
     }
 
-    @PreAuthorize("hasRole('ONG')")
+    @PreAuthorize("hasRole('ROLE_ONG')")
     @GetMapping
     public ResponseEntity<List<LogDto>> findAllLogs() {
         List<LogDto> logsEncontrados = logServ.findAll();
 
-        return ResponseEntity.status(HttpStatus.FOUND).body(logsEncontrados);
+        return ResponseEntity.status(HttpStatus.OK).body(logsEncontrados);
     }
 
-    @PreAuthorize("hasRole('ONG')")
+    @PreAuthorize("hasRole('ROLE_ONG')")
     @GetMapping("/{id}")
-    public ResponseEntity<LogDto> findLogById(@PathVariable Long id) {
+    public ResponseEntity<LogDto> findLogById(@PathVariable UUID id) {
         LogDto logEncontrado = logServ.findById(id);
 
-        return ResponseEntity.status(HttpStatus.FOUND).body(logEncontrado);
-    }
-
-    @PreAuthorize("hasRole('ONG')")
-    @PutMapping("/{id}")
-    public ResponseEntity<LogDto> updateLog(
-            @PathVariable Long id,
-            @RequestBody LogDto logDto) {
-        LogDto logAtualizado = logServ.update(id, logDto);
-
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(logAtualizado);
-    }
-
-    @PreAuthorize("hasRole('ONG')")
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteLogById(@PathVariable Long id) {
-        logServ.deleteById(id);
-
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.OK).body(logEncontrado);
     }
 
 }

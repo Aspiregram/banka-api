@@ -6,25 +6,31 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "log_redefinicao_senha")
 public class Log {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
-    @OneToOne
-    @JoinColumn(name = "usuario_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id", nullable = false, updatable = false)
     private Usuario usuario;
 
-    @OneToOne
-    @JoinColumn(name = "ong_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ong_id", nullable = false, updatable = false)
     private Ong ong;
 
+    @Column(name = "data_redefinicao", nullable = false, updatable = false)
     private LocalDateTime dataAlteracao;
+
+    @Column(columnDefinition = "TEXT", nullable = false, updatable = false)
+    private String motivo;
 
 }
