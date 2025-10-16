@@ -13,4 +13,5 @@ public interface ContaRepository extends JpaRepository<Conta, UUID> {
     boolean existsByUsuarioIdAndMoedaId(UUID usuarioId, UUID moedaId);
 
     Optional<Conta> findByUsuarioIdAndMoedaId(UUID usuarioId, UUID moedaId);
+
 }
