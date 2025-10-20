@@ -1,10 +1,15 @@
 package com.banka.api.services;
 
+import com.banka.api.exceptions.EntityNotFoundException;
+import com.banka.api.exceptions.ResourceConflictException;
+import com.banka.api.models.Moeda;
 import com.banka.api.models.Pais;
-import com.banka.api.records.PaisDto;
+import com.banka.api.records.pais.PaisCreateDto;
+import com.banka.api.records.pais.PaisResponseDto;
+import com.banka.api.records.pais.PaisUpdateDto;
 import com.banka.api.repositories.PaisRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -12,78 +17,99 @@ import java.util.stream.Collectors;
 
 @Service
 public class PaisService {
-
     private final PaisRepository paisRepo;
 
     public PaisService(PaisRepository paisRepo) {
         this.paisRepo = paisRepo;
     }
 
+    // POST
     @Transactional
-    public PaisDto save(PaisDto paisDto) {
-        if (paisRepo.existsByNome(paisDto.nome()))
-            throw new RuntimeException("País já cadastrado");
+    public PaisResponseDto save(PaisCreateDto paisCreateDto) {
+        if (paisRepo.existsByNome(paisCreateDto.nome()))
+            throw new ResourceConflictException
+                    ("Um país já possui esse nome");
 
-        Pais pais = new Pais(
-                null,
-                paisDto.nome(),
-                paisDto.isoCode(),
-                null
-        );
-
+        Pais pais = fromCreateDto(paisCreateDto);
         Pais paisSalvo = paisRepo.save(pais);
 
-        return toDto(paisSalvo);
+        return toResponseDto(paisSalvo);
     }
 
-    public List<PaisDto> findAll() {
-        if (paisRepo.findAll().isEmpty())
-            throw new RuntimeException("Não há nenhum país cadastrado");
-
+    // GET
+    public List<PaisResponseDto> findAll() {
         List<Pais> paises = paisRepo.findAll();
 
+        if (paises.isEmpty())
+            throw new EntityNotFoundException
+                    ("Não há países registrados");
+
         return paises.stream()
-                .map(this::toDto)
+                .map(this::toResponseDto)
                 .collect(Collectors.toList());
     }
 
-    public PaisDto findById(UUID id) {
-        return toDto(findEntityById(id));
+    // GET
+    public PaisResponseDto findById(UUID id) {
+        Pais paisEncontrado = paisRepo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException
+                        ("O país com ID \"" + id + "\" não pode ser encontrado"));
+
+        return toResponseDto(paisEncontrado);
     }
 
-    private Pais findEntityById(UUID id) {
-        return paisRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("País não encontrado"));
-    }
-
+    // PUT
     @Transactional
-    public PaisDto update(UUID id, PaisDto paisDto) {
-        Pais paisEncontrado = findEntityById(id);
+    public PaisResponseDto update(UUID id, PaisUpdateDto paisUptDto) {
+        Pais paisEncontrado = paisRepo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException
+                        ("O país com ID \"" + id + "\" não pode ser encontrado"));
 
-        if (!paisEncontrado.getNome().equals(paisDto.nome()) && paisRepo.existsByNome(paisDto.nome()))
-            throw new RuntimeException("O novo nome de país já está em uso");
-
-
-        paisEncontrado.setNome(paisDto.nome());
-        paisEncontrado.setIsoCode(paisDto.isoCode());
+        paisEncontrado.setNome(paisUptDto.nome());
+        paisEncontrado.setIsoCode(paisUptDto.isoCode());
 
         Pais paisAtualizado = paisRepo.save(paisEncontrado);
 
-        return toDto(paisAtualizado);
+        return toResponseDto(paisAtualizado);
     }
 
+    // DELETE
+    public void deleteAll() {
+        List<Pais> paises = paisRepo.findAll();
+
+        if (paises.isEmpty())
+            throw new EntityNotFoundException
+                    ("Não há países registrados");
+
+        paisRepo.deleteAll();
+    }
+
+    // DELETE
     public void deleteById(UUID id) {
-        if (!paisRepo.existsById(id))
-            throw new RuntimeException("País não existe");
+        if (paisRepo.findById(id).isEmpty())
+            throw new EntityNotFoundException
+                    ("O país com ID \"" + id + "\" não pode ser encontrado");
 
         paisRepo.deleteById(id);
     }
 
-    private PaisDto toDto(Pais pais) {
-        return new PaisDto(
-                pais.getNome(),
-                pais.getIsoCode()
+    private Pais fromCreateDto(PaisCreateDto paisCreateDto) {
+        return new Pais(
+                null,
+                paisCreateDto.nome(),
+                paisCreateDto.isoCode(),
+                null
         );
     }
 
+    private PaisResponseDto toResponseDto(Pais pais) {
+        return new PaisResponseDto(
+                pais.getId(),
+                pais.getNome(),
+                pais.getIsoCode(),
+                pais.getMoedas().stream()
+                        .map(Moeda::getId)
+                        .collect(Collectors.toSet())
+        );
+    }
 }

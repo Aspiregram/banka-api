@@ -9,9 +9,5 @@ import java.util.UUID;
 
 @Repository
 public interface ContaRepository extends JpaRepository<Conta, UUID> {
-
-    boolean existsByUsuarioIdAndMoedaId(UUID usuarioId, UUID moedaId);
-
-    Optional<Conta> findByUsuarioIdAndMoedaId(UUID usuarioId, UUID moedaId);
-
+    boolean existsByCliente(UUID cliente);
 }

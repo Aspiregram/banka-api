@@ -1,11 +1,19 @@
 package com.banka.api.services;
 
+import com.banka.api.exceptions.EntityNotFoundException;
+import com.banka.api.exceptions.ResourceConflictException;
+import com.banka.api.models.Cliente;
 import com.banka.api.models.Ong;
-import com.banka.api.records.OngDto;
+import com.banka.api.records.ong.OngCreateDto;
+import com.banka.api.records.ong.OngResponseDto;
+import com.banka.api.records.ong.OngUpdateDto;
+import com.banka.api.records.usuario.UsuarioResponseDto;
 import com.banka.api.repositories.OngRepository;
+import com.banka.api.repositories.PaisRepository;
+import com.banka.api.repositories.UsuarioRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -13,113 +21,132 @@ import java.util.stream.Collectors;
 
 @Service
 public class OngService {
-
     private final OngRepository ongRepo;
+    private final UsuarioRepository usuRepo;
     private final PasswordEncoder passEncod;
+    private final PaisRepository paisRepo;
 
-    public OngService(OngRepository ongRepo, PasswordEncoder passEncod) {
+    public OngService(OngRepository ongRepo, UsuarioRepository usuRepo,
+                      PasswordEncoder passEncod, PaisRepository paisRepo) {
         this.ongRepo = ongRepo;
+        this.usuRepo = usuRepo;
         this.passEncod = passEncod;
+        this.paisRepo = paisRepo;
     }
 
+    // POST
     @Transactional
-    public OngDto save(OngDto ongDto) {
-        if (ongRepo.existsByEmail(ongDto.email()))
-            throw new RuntimeException("ONG já cadastrada");
+    public OngResponseDto save(OngCreateDto ongCreateDto) {
+        if (usuRepo.existsByEmail(ongCreateDto.usuCreateDto().email()))
+            throw new ResourceConflictException
+                    ("Uma ONG já possui esse email");
 
-        String senhaCodificada = passEncod.encode(ongDto.senha());
-
-        Ong ong = new Ong(
-                null,
-                ongDto.nome(),
-                ongDto.email(),
-                senhaCodificada,
-                ongDto.telefone(),
-                null,
-                ongDto.pais(),
-                null,
-                null,
-                null,
-                null,
-                null
-        );
-
+        Ong ong = fromCreateDto(ongCreateDto);
         Ong ongSalva = ongRepo.save(ong);
 
-        return toDto(ongSalva);
+        return toResponseDto(ongSalva);
     }
 
-    public List<OngDto> findAll() {
-        if (ongRepo.findAll().isEmpty())
-            throw new RuntimeException("Não há nenhuma ONG cadastrada");
-
+    // GET
+    public List<OngResponseDto> findAll() {
         List<Ong> ongs = ongRepo.findAll();
 
+        if (ongs.isEmpty())
+            throw new EntityNotFoundException
+                    ("Não há ONGs registradas");
+
         return ongs.stream()
-                .map(this::toDto)
+                .map(this::toResponseDto)
                 .collect(Collectors.toList());
     }
 
-    public OngDto findById(UUID id) {
-        return toDto(findEntityById(id));
+    // GET
+    public OngResponseDto findById(UUID id) {
+        Ong ongEncontrada = ongRepo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException
+                        ("A ONG com ID \"" + id + "\" não pode ser encontrada"));
+
+        return toResponseDto(ongEncontrada);
     }
 
-    private Ong findEntityById(UUID id) {
-        return ongRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("ONG não encontrada"));
-    }
-
-    public OngDto findByEmail(String email) {
-        Ong ongEncontrada = ongRepo.findByEmail(email)
-                .orElseThrow(() ->
-                        new RuntimeException("ONG não encontrada"));
-
-        return toDto(ongEncontrada);
-    }
-
+    // PUT
     @Transactional
-    public OngDto update(UUID id, OngDto ongDto) {
-        Ong ongEncontrada = findEntityById(id);
+    public OngResponseDto update(UUID id, OngUpdateDto ongUptDto) {
+        Ong ongEncontrada = ongRepo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException
+                        ("A ONG com ID \"" + id + "\" não pode ser encontrada"));
 
-        ongEncontrada.setNome(ongDto.nome());
-
-        if (!ongEncontrada.getEmail().equals(ongDto.email()) && ongRepo.existsByEmail(ongDto.email()))
-            throw new RuntimeException("O novo email já está em uso por outra conta");
-
-
-        ongEncontrada.setEmail(ongDto.email());
-
-        if (ongDto.senha() != null && !ongDto.senha().isEmpty()) {
-            String senhaCodificada = passEncod.encode(ongDto.senha());
-
-            ongEncontrada.setSenha(senhaCodificada);
-        }
-
-        ongEncontrada.setTelefone(ongDto.telefone());
-        ongEncontrada.setPais(ongDto.pais());
+        ongEncontrada.setUsername(ongUptDto.usuUptDto().username());
+        ongEncontrada.setNome(ongUptDto.usuUptDto().nome());
+        ongEncontrada.setSobrenome(ongUptDto.usuUptDto().sobrenome());
+        ongEncontrada.setEmail(ongUptDto.usuUptDto().email());
+        ongEncontrada.setSenha(
+                passEncod.encode(ongUptDto.usuUptDto().senha()));
+        ongEncontrada.setTelefone(ongUptDto.telefone());
+        ongEncontrada.setPais(
+                paisRepo.findById(ongUptDto.pais())
+                        .orElseThrow(() -> new EntityNotFoundException
+                                ("O país originário com ID \"" + ongUptDto.pais()
+                                        + "\" não pode ser encontrado")));
+        ongEncontrada.setSaldoGlobal(ongUptDto.saldoGlobal());
 
         Ong ongAtualizada = ongRepo.save(ongEncontrada);
 
-        return toDto(ongAtualizada);
+        return toResponseDto(ongAtualizada);
     }
 
-    @Transactional
+    // DELETE
+    public void deleteAll() {
+        List<Ong> ongs = ongRepo.findAll();
+
+        if (ongs.isEmpty())
+            throw new EntityNotFoundException
+                    ("Não há ONGs registradas");
+
+        ongRepo.deleteAll();
+    }
+
+    // DELETE
     public void deleteById(UUID id) {
-        if (!ongRepo.existsById(id))
-            throw new RuntimeException("ONG não existe");
+        if (ongRepo.findById(id).isEmpty())
+            throw new EntityNotFoundException
+                    ("A ONG com ID \"" + id + "\" não pode ser encontrada");
 
         ongRepo.deleteById(id);
     }
 
-    private OngDto toDto(Ong ong) {
-        return new OngDto(
-                ong.getNome(),
-                ong.getEmail(),
-                ong.getSenha(),
-                ong.getTelefone(),
-                ong.getPais(),
-                ong.getSaldoGlobal()
+    private Ong fromCreateDto(OngCreateDto ongCreateDto) {
+        return new Ong(
+                ongCreateDto.telefone(),
+                paisRepo.findById(ongCreateDto.pais())
+                        .orElseThrow(() -> new EntityNotFoundException
+                                ("O país com ID \"" + ongCreateDto.pais()
+                                        + "\" não pode ser encontrado")),
+                ongCreateDto.saldoGlobal(),
+                null
         );
     }
 
+    private OngResponseDto toResponseDto(Ong ong) {
+        return new OngResponseDto(
+                new UsuarioResponseDto(
+                        ong.getId(),
+                        ong.getUsername(),
+                        ong.getNome(),
+                        ong.getSobrenome(),
+                        ong.getEmail(),
+                        ong.getRole(),
+                        ong.getFaceHash(),
+                        ong.getCriadoEm(),
+                        ong.getUltimoLogin()
+                ),
+                ong.getTelefone(),
+                ong.getPais().getId(),
+                ong.getSaldoGlobal(),
+                ong.getClientes()
+                        .stream()
+                        .map(Cliente::getId)
+                        .collect(Collectors.toSet())
+        );
+    }
 }

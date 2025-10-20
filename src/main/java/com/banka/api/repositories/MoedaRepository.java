@@ -9,9 +9,7 @@ import java.util.UUID;
 
 @Repository
 public interface MoedaRepository extends JpaRepository<Moeda, UUID> {
-
-    boolean existsBySigla(String sigla);
-
     Optional<Moeda> findBySigla(String sigla);
 
+    boolean existsBySigla(String sigla);
 }

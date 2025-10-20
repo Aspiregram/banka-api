@@ -1,5 +1,6 @@
 package com.banka.api.services;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -8,11 +9,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
+import java.util.Arrays;
 import java.util.Date;
 
 @Service
 public class JwtService {
-
     @Value("${jwt.secret}")
     private String segredo;
 
@@ -24,9 +25,13 @@ public class JwtService {
     }
 
     public String generateToken(UserDetails userDet) {
+        Claims claims = Jwts.claims();
+
+        claims.setSubject(userDet.getUsername());
+        claims.put("roles", Arrays.asList("ROLE_ADMIN", "ROLE_ONG", "ROLE_CLIENTE"));
+
         return Jwts.builder()
-                .setSubject(userDet.getUsername())
-                .claim("roles", userDet.getAuthorities())
+                .setClaims(claims)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiracao))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
@@ -43,9 +48,9 @@ public class JwtService {
     }
 
     public boolean isTokenValid(String token, String username) {
-        final String userExtraido = extractUsername(token);
+        String usernameExtraido = extractUsername(token);
 
-        return userExtraido.equals(username)
+        return usernameExtraido.equals(extractUsername(username))
                 && !isTokenExpired(token);
     }
 
@@ -59,5 +64,4 @@ public class JwtService {
 
         return exp.before(new Date());
     }
-
 }

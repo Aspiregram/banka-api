@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Data
@@ -14,29 +16,30 @@ import java.util.UUID;
 @AllArgsConstructor
 @Entity
 public class Conta {
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id", nullable = false)
-    private Usuario usuario;
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, optional = false)
+    private Cliente cliente;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "moeda_id", nullable = false)
-    private Moeda moeda;
+    @OneToMany(mappedBy = "conta", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Set<Moeda> moedas;
 
-    @Column(precision = 15, scale = 2)
+    @OneToMany(mappedBy = "conta", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Set<Transacao> transacoes;
+
+    @Column(precision = 15, scale = 2, nullable = false)
     private BigDecimal saldo;
 
-    @Column(name = "data_criacao", updatable = false)
-    private LocalDateTime dataCriacao;
+    @Column(name = "data_criacao", nullable = false, updatable = false)
+    private LocalDateTime criadaEm;
 
     @PrePersist
-    protected void onCreate() {
+    public void onCreate() {
+        moedas = new HashSet<>();
+        transacoes = new HashSet<>();
         saldo = BigDecimal.ZERO;
-        dataCriacao = LocalDateTime.now();
+        criadaEm = LocalDateTime.now();
     }
-
 }

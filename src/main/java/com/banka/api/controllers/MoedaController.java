@@ -1,6 +1,8 @@
 package com.banka.api.controllers;
 
-import com.banka.api.records.MoedaDto;
+import com.banka.api.records.moeda.MoedaCreateDto;
+import com.banka.api.records.moeda.MoedaResponseDto;
+import com.banka.api.records.moeda.MoedaUpdateDto;
 import com.banka.api.services.MoedaService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,51 +15,60 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/moedas")
 public class MoedaController {
-
     private final MoedaService moedaServ;
 
     public MoedaController(MoedaService moedaServ) {
         this.moedaServ = moedaServ;
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping
-    public ResponseEntity<MoedaDto> saveMoeda(@RequestBody MoedaDto moedaDto) {
-        MoedaDto moedaCriada = moedaServ.save(moedaDto);
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<MoedaResponseDto> createMoeda(@RequestBody MoedaCreateDto usuCreateDto) {
+        MoedaResponseDto moedaCriada = moedaServ.save(usuCreateDto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(moedaCriada);
     }
 
     @GetMapping
-    public ResponseEntity<List<MoedaDto>> findAllMoedas() {
-        List<MoedaDto> moedasEncontradas = moedaServ.findAll();
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<List<MoedaResponseDto>> listAllMoedas() {
+        List<MoedaResponseDto> moedasListadas = moedaServ.findAll();
 
-        return ResponseEntity.status(HttpStatus.OK).body(moedasEncontradas);
+        return ResponseEntity.status(HttpStatus.FOUND).body(moedasListadas);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<MoedaDto> findMoedaById(@PathVariable UUID id) {
-        MoedaDto moedaEncontrada = moedaServ.findById(id);
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<MoedaResponseDto> findMoedaById(@PathVariable UUID id) {
+        MoedaResponseDto moedaEncontrada = moedaServ.findById(id);
 
-        return ResponseEntity.status(HttpStatus.OK).body(moedaEncontrada);
+        return ResponseEntity.status(HttpStatus.FOUND).body(moedaEncontrada);
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<MoedaDto> updateMoeda(
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<MoedaResponseDto> updateMoeda(
             @PathVariable UUID id,
-            @RequestBody MoedaDto moedaDto) {
-        MoedaDto moedaAtualizada = moedaServ.update(id, moedaDto);
+            @RequestBody MoedaUpdateDto usuUptDto
+    ) {
+        MoedaResponseDto moedaAtualizada = moedaServ.update(id, usuUptDto);
 
-        return ResponseEntity.status(HttpStatus.OK).body(moedaAtualizada);
+        return ResponseEntity.ok(moedaAtualizada);
     }
 
+    @DeleteMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<Void> deleteAllMoedas() {
+        moedaServ.deleteAll();
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteMoedaById(@PathVariable UUID id) {
         moedaServ.deleteById(id);
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
-
 }

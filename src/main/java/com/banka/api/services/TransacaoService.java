@@ -1,92 +1,123 @@
 package com.banka.api.services;
 
+import com.banka.api.exceptions.EntityNotFoundException;
 import com.banka.api.models.Transacao;
-import com.banka.api.records.TransacaoDto;
+import com.banka.api.records.transacao.TransacaoCreateDto;
+import com.banka.api.records.transacao.TransacaoResponseDto;
+import com.banka.api.repositories.ContaRepository;
 import com.banka.api.repositories.TransacaoRepository;
+import com.banka.api.repositories.MoedaRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 public class TransacaoService {
+    private final TransacaoRepository transacaoRepo;
+    private final ContaRepository contaRepo;
+    private final MoedaRepository moedaRepo;
 
-    private final TransacaoRepository transRepo;
-    private final ContaService contaServ;
-
-    public TransacaoService(TransacaoRepository transRepo, ContaService contaServ) {
-        this.transRepo = transRepo;
-        this.contaServ = contaServ;
+    public TransacaoService(TransacaoRepository transacaoRepo, ContaRepository contaRepo,
+                            MoedaRepository moedaRepo) {
+        this.transacaoRepo = transacaoRepo;
+        this.contaRepo = contaRepo;
+        this.moedaRepo = moedaRepo;
     }
 
+    // POST
     @Transactional
-    public TransacaoDto makeTransaction(TransacaoDto transDto) {
-        BigDecimal valorOriginal = transDto.valorOriginal();
+    public TransacaoResponseDto save(TransacaoCreateDto transacaoCreateDto) {
+        Transacao transacao = fromCreateDto(transacaoCreateDto);
+        Transacao transacaoSalva = transacaoRepo.save(transacao);
 
-        if (transDto.contaOrigem().getSaldo().compareTo(valorOriginal) < 0)
-            throw new RuntimeException("Saldo insuficiente na conta de origem");
-
-        BigDecimal taxaConversao = transDto.contaFinal().getMoeda().getTaxaConversao();
-        BigDecimal valorConvertido = valorOriginal.multiply(taxaConversao);
-
-        contaServ.updateSaldo(transDto.contaOrigem().getId(), valorOriginal.negate());
-        contaServ.updateSaldo(transDto.contaFinal().getId(), valorConvertido);
-
-        Transacao trans = new Transacao(
-                null,
-                transDto.contaOrigem(),
-                transDto.contaFinal(),
-                valorOriginal,
-                transDto.moedaOrigem(),
-                valorConvertido,
-                transDto.moedaFinal(),
-                taxaConversao,
-                null,
-                transDto.tipo(),
-                transDto.status(),
-                null,
-                null
-        );
-
-        Transacao transSalva = transRepo.save(trans);
-
-        return toDto(transSalva);
+        return toResponseDto(transacaoSalva);
     }
 
-    public List<TransacaoDto> findAll() {
-        if (transRepo.findAll().isEmpty())
-            throw new RuntimeException("Não há nenhuma transação registrada");
+    // GET
+    public List<TransacaoResponseDto> findAll() {
+        List<Transacao> transacoes = transacaoRepo.findAll();
 
-        List<Transacao> transas = transRepo.findAll();
+        if (transacoes.isEmpty())
+            throw new EntityNotFoundException
+                    ("Não há transações registradas");
 
-        return transas.stream()
-                .map(this::toDto)
+        return transacoes.stream()
+                .map(this::toResponseDto)
                 .collect(Collectors.toList());
     }
 
-    public TransacaoDto findById(UUID id) {
-        Transacao transEncontrada = transRepo.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Transação não encontrada"));
+    // GET
+    public TransacaoResponseDto findById(UUID id) {
+        Transacao transacaoEncontrada = transacaoRepo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException
+                        ("A transação com ID \"" + id + "\" não pode ser encontrada"));
 
-        return toDto(transEncontrada);
+        return toResponseDto(transacaoEncontrada);
     }
 
-    private TransacaoDto toDto(Transacao trans) {
-        return new TransacaoDto(
-                trans.getContaOrigem(),
-                trans.getContaDestino(),
-                trans.getValorOriginal(),
-                trans.getMoedaOrigem(),
-                trans.getValorConvertido(),
-                trans.getMoedaDestino(),
-                trans.getTaxaUtilizada(),
-                trans.getTipo(),
-                trans.getStatus()
+    // DELETE
+    public void deleteAll() {
+        List<Transacao> transacoes = transacaoRepo.findAll();
+
+        if (transacoes.isEmpty())
+            throw new EntityNotFoundException
+                    ("Não há transações registradas");
+
+        transacaoRepo.deleteAll();
+    }
+
+    // DELETE
+    public void deleteById(UUID id) {
+        if (transacaoRepo.findById(id).isEmpty())
+            throw new EntityNotFoundException
+                    ("A transação com ID \"" + id + "\" não pode ser encontrada");
+
+        transacaoRepo.deleteById(id);
+    }
+
+    private Transacao fromCreateDto(TransacaoCreateDto transacaoCreateDto) {
+        return new Transacao(
+                null,
+                contaRepo.findById(transacaoCreateDto.contaOrigem())
+                        .orElseThrow(() -> new EntityNotFoundException
+                                ("A conta originária com ID \"" + transacaoCreateDto.contaOrigem()
+                                        + "\" não pode ser encontrada")),
+                contaRepo.findById(transacaoCreateDto.contaDestino())
+                        .orElseThrow(() -> new EntityNotFoundException
+                                ("A conta destinária com ID \"" + transacaoCreateDto.contaDestino()
+                                        + "\" não pode ser encontrada")),
+                transacaoCreateDto.valorOriginal(),
+                moedaRepo.findById(transacaoCreateDto.moedaOrigem())
+                        .orElseThrow(() -> new EntityNotFoundException
+                                ("A moeda originária com ID \"" + transacaoCreateDto.moedaOrigem()
+                                        + "\" não pode ser encontrada")),
+                transacaoCreateDto.valorConvertido(),
+                moedaRepo.findById(transacaoCreateDto.moedaDestino())
+                        .orElseThrow(() -> new EntityNotFoundException
+                                ("A moeda destinária com ID \"" + transacaoCreateDto.moedaDestino()
+                                        + "\" não pode ser encontrada")),
+                transacaoCreateDto.taxaUtilizada(),
+                transacaoCreateDto.tipo(),
+                transacaoCreateDto.status(),
+                transacaoCreateDto.dataTransacao());
+    }
+
+    private TransacaoResponseDto toResponseDto(Transacao transacao) {
+        return new TransacaoResponseDto(
+                transacao.getId(),
+                transacao.getContaOrigem().getId(),
+                transacao.getContaDestino().getId(),
+                transacao.getValorOriginal(),
+                transacao.getMoedaOrigem().getId(),
+                transacao.getValorConvertido(),
+                transacao.getMoedaDestino().getId(),
+                transacao.getTaxaUtilizada(),
+                transacao.getTipo(),
+                transacao.getStatus(),
+                transacao.getDataTransacao()
         );
     }
-
 }

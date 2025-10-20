@@ -1,6 +1,7 @@
 package com.banka.api.controllers;
 
-import com.banka.api.records.TransacaoDto;
+import com.banka.api.records.transacao.TransacaoCreateDto;
+import com.banka.api.records.transacao.TransacaoResponseDto;
 import com.banka.api.services.TransacaoService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,35 +14,49 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/transacoes")
 public class TransacaoController {
+    private final TransacaoService transacaoServ;
 
-    private final TransacaoService transServ;
-
-    public TransacaoController(TransacaoService transServ) {
-        this.transServ = transServ;
+    public TransacaoController(TransacaoService transacaoServ) {
+        this.transacaoServ = transacaoServ;
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ONG')")
     @PostMapping
-    public ResponseEntity<TransacaoDto> realizarTransacao(@RequestBody TransacaoDto transDto) {
-        TransacaoDto transCriada = transServ.makeTransaction(transDto);
+    @PreAuthorize("hasRole('ROLE_CLIENTE')")
+    public ResponseEntity<TransacaoResponseDto> createTransacao(@RequestBody TransacaoCreateDto usuCreateDto) {
+        TransacaoResponseDto transacaoCriada = transacaoServ.save(usuCreateDto);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(transCriada);
+        return ResponseEntity.status(HttpStatus.CREATED).body(transacaoCriada);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_ONG', 'ROLE_USER')")
     @GetMapping
-    public ResponseEntity<List<TransacaoDto>> findAllTransacoes() {
-        List<TransacaoDto> transasEncontradas = transServ.findAll();
+    @PreAuthorize("hasAnyRole('ROLE_ONG', 'ROLE_CLIENTE')")
+    public ResponseEntity<List<TransacaoResponseDto>> listAllTransacoes() {
+        List<TransacaoResponseDto> transacoesListadas = transacaoServ.findAll();
 
-        return ResponseEntity.status(HttpStatus.OK).body(transasEncontradas);
+        return ResponseEntity.status(HttpStatus.FOUND).body(transacoesListadas);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_ONG', 'ROLE_USER')")
     @GetMapping("/{id}")
-    public ResponseEntity<TransacaoDto> findTransacaoById(@PathVariable UUID id) {
-        TransacaoDto transEncontrada = transServ.findById(id);
+    @PreAuthorize("hasAnyRole('ROLE_ONG', 'ROLE_CLIENTE')")
+    public ResponseEntity<TransacaoResponseDto> findTransacaoById(@PathVariable UUID id) {
+        TransacaoResponseDto transacaoEncontrada = transacaoServ.findById(id);
 
-        return ResponseEntity.status(HttpStatus.OK).body(transEncontrada);
+        return ResponseEntity.status(HttpStatus.FOUND).body(transacaoEncontrada);
     }
 
+    @DeleteMapping
+    @PreAuthorize("hasRole('ROLE_ONG')")
+    public ResponseEntity<Void> deleteAllTransacoes() {
+        transacaoServ.deleteAll();
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ONG')")
+    public ResponseEntity<Void> deleteTransacaoById(@PathVariable UUID id) {
+        transacaoServ.deleteById(id);
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
 }

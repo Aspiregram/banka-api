@@ -1,6 +1,8 @@
 package com.banka.api.controllers;
 
-import com.banka.api.records.PaisDto;
+import com.banka.api.records.pais.PaisCreateDto;
+import com.banka.api.records.pais.PaisResponseDto;
+import com.banka.api.records.pais.PaisUpdateDto;
 import com.banka.api.services.PaisService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,48 +15,60 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/paises")
 public class PaisController {
+    private final PaisService paisServ;
 
-    private final PaisService paisService;
-
-    public PaisController(PaisService paisService) {
-        this.paisService = paisService;
+    public PaisController(PaisService paisServ) {
+        this.paisServ = paisServ;
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping
-    public ResponseEntity<PaisDto> createPais(@RequestBody PaisDto paisDto) {
-        PaisDto novoPais = paisService.save(paisDto);
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<PaisResponseDto> createPais(@RequestBody PaisCreateDto usuCreateDto) {
+        PaisResponseDto paisCriado = paisServ.save(usuCreateDto);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(novoPais);
+        return ResponseEntity.status(HttpStatus.CREATED).body(paisCriado);
     }
 
     @GetMapping
-    public ResponseEntity<List<PaisDto>> getAllPaises() {
-        List<PaisDto> paises = paisService.findAll();
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<List<PaisResponseDto>> listAllPaises() {
+        List<PaisResponseDto> paisesListados = paisServ.findAll();
 
-        return ResponseEntity.ok(paises);
+        return ResponseEntity.status(HttpStatus.FOUND).body(paisesListados);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PaisDto> getPaisById(@PathVariable UUID id) {
-        PaisDto pais = paisService.findById(id);
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<PaisResponseDto> findPaisById(@PathVariable UUID id) {
+        PaisResponseDto paisEncontrado = paisServ.findById(id);
 
-        return ResponseEntity.ok(pais);
+        return ResponseEntity.status(HttpStatus.FOUND).body(paisEncontrado);
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<PaisDto> updatePais(@PathVariable UUID id, @RequestBody PaisDto paisDto) {
-        PaisDto paisAtualizado = paisService.update(id, paisDto);
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<PaisResponseDto> updatePais(
+            @PathVariable UUID id,
+            @RequestBody PaisUpdateDto usuUptDto
+    ) {
+        PaisResponseDto paisAtualizado = paisServ.update(id, usuUptDto);
 
         return ResponseEntity.ok(paisAtualizado);
     }
 
+    @DeleteMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePais(@PathVariable UUID id) {
-        paisService.deleteById(id);
+    public ResponseEntity<Void> deleteAllPaises() {
+        paisServ.deleteAll();
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<Void> deletePaisById(@PathVariable UUID id) {
+        paisServ.deleteById(id);
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

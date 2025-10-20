@@ -1,11 +1,16 @@
 package com.banka.api.services;
 
+import com.banka.api.exceptions.EntityNotFoundException;
+import com.banka.api.exceptions.ForbiddenOperationException;
+import com.banka.api.exceptions.ResourceConflictException;
 import com.banka.api.models.Usuario;
-import com.banka.api.records.UsuarioDto;
+import com.banka.api.records.usuario.UsuarioCreateDto;
+import com.banka.api.records.usuario.UsuarioResponseDto;
+import com.banka.api.records.usuario.UsuarioUpdateDto;
 import com.banka.api.repositories.UsuarioRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -13,7 +18,6 @@ import java.util.stream.Collectors;
 
 @Service
 public class UsuarioService {
-
     private final UsuarioRepository usuRepo;
     private final PasswordEncoder passEncod;
 
@@ -22,103 +26,114 @@ public class UsuarioService {
         this.passEncod = passEncod;
     }
 
+    // POST
     @Transactional
-    public UsuarioDto save(UsuarioDto usuDto) {
-        if (usuRepo.existsByEmail(usuDto.email()))
-            throw new RuntimeException("Usuário já cadastrado com este email");
+    public UsuarioResponseDto save(UsuarioCreateDto usuCreateDto) {
+        if (usuRepo.existsByEmail(usuCreateDto.email()))
+            throw new ResourceConflictException
+                    ("Um usuário já possui esse email");
 
-        String senhaCodificada = passEncod.encode(usuDto.senha());
+        Usuario usu = fromCreateDto(usuCreateDto);
+        Usuario usuarioSalvo = usuRepo.save(usu);
 
-        Usuario usu = new Usuario(
+        return toResponseDto(usuarioSalvo);
+    }
+
+    // GET
+    public List<UsuarioResponseDto> findAll() {
+        List<Usuario> usuarios = usuRepo.findAll();
+
+        if (usuarios.isEmpty())
+            throw new EntityNotFoundException
+                    ("Não há usuários registrados");
+
+        return usuarios.stream()
+                .map(this::toResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    // GET
+    public UsuarioResponseDto findById(UUID id) {
+        Usuario usuarioEncontrado = usuRepo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException
+                        ("O usuário com ID \"" + id + "\" não pode ser encontrado"));
+
+        return toResponseDto(usuarioEncontrado);
+    }
+
+    // PUT
+    @Transactional
+    public UsuarioResponseDto update(UUID id, UsuarioUpdateDto usuUptDto) {
+        Usuario usuarioEncontrado = usuRepo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException
+                        ("O usuário com ID \"" + id + "\" não pode ser encontrado"));
+
+        usuarioEncontrado.setUsername(usuUptDto.username());
+        usuarioEncontrado.setNome(usuUptDto.nome());
+        usuarioEncontrado.setSobrenome(usuUptDto.sobrenome());
+        usuarioEncontrado.setEmail(usuUptDto.email());
+        usuarioEncontrado.setSenha(
+                passEncod.encode(usuUptDto.senha()));
+
+        Usuario usuarioAtualizado = usuRepo.save(usuarioEncontrado);
+
+        return toResponseDto(usuarioAtualizado);
+    }
+
+    // DELETE
+    public void deleteAll() {
+        List<Usuario> usuarios = usuRepo.findAll();
+
+        if (usuarios.isEmpty())
+            throw new EntityNotFoundException
+                    ("Não há usuários registrados");
+
+        List<Usuario> usuariosParaDeletar = usuarios.stream()
+                .filter(u -> !u.getUsername().equals("system"))
+                .toList();
+
+        usuRepo.deleteAll(usuariosParaDeletar);
+    }
+
+    // DELETE
+    public void deleteById(UUID id) {
+        Usuario usuarioEncontrado = usuRepo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException
+                        ("O usuário com ID \"" + id + "\" não pode ser encontrado"));
+
+        if (usuarioEncontrado.getUsername().equals("system"))
+            throw new ForbiddenOperationException
+                    ("O usuário com ID \"" + usuarioEncontrado.getUsername() + "\" não pode ser deletado");
+
+        usuRepo.deleteById(id);
+    }
+
+    private Usuario fromCreateDto(UsuarioCreateDto usuCreateDto) {
+        return new Usuario(
                 null,
-                usuDto.nome(),
-                usuDto.sobrenome(),
-                usuDto.email(),
-                senhaCodificada,
-                usuDto.documento(),
-                null,
-                usuDto.paisOrigem(),
-                usuDto.paisResidencia(),
-                usuDto.ong(),
+                usuCreateDto.username(),
+                usuCreateDto.nome(),
+                usuCreateDto.sobrenome(),
+                usuCreateDto.email(),
+                passEncod.encode(usuCreateDto.senha()),
                 null,
                 null,
                 null,
                 null
         );
-
-        Usuario usuSalvo = usuRepo.save(usu);
-
-        return toDto(usuSalvo);
     }
 
-    public List<UsuarioDto> findAll() {
-        if (usuRepo.findAll().isEmpty())
-            throw new RuntimeException("Não há nenhum usuário cadastrado");
-
-        List<Usuario> usus = usuRepo.findAll();
-
-        return usus.stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
-    }
-
-    private Usuario findEntityById(UUID id) {
-        return usuRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-    }
-
-    public UsuarioDto findById(UUID id) {
-        return toDto(findEntityById(id));
-    }
-
-    public UsuarioDto findByEmail(String email) {
-        Usuario usuEncontrado = usuRepo.findByEmail(email)
-                .orElseThrow(() ->
-                        new RuntimeException("Usuário não encontrado"));
-
-        return toDto(usuEncontrado);
-    }
-
-    @Transactional
-    public UsuarioDto update(UUID id, UsuarioDto usuDto) {
-        Usuario usuEncontrado = findEntityById(id);
-
-        usuEncontrado.setNome(usuDto.nome());
-        usuEncontrado.setSobrenome(usuDto.sobrenome());
-        usuEncontrado.setEmail(usuDto.email());
-
-        if (usuDto.senha() != null && !usuDto.senha().isEmpty())
-            usuEncontrado.setSenha(passEncod.encode(usuDto.senha()));
-
-
-        usuEncontrado.setDocumento(usuDto.documento());
-        usuEncontrado.setPaisOrigem(usuDto.paisOrigem());
-        usuEncontrado.setPaisResidencia(usuDto.paisResidencia());
-        usuEncontrado.setOng(usuDto.ong());
-
-        Usuario usuAtualizado = usuRepo.save(usuEncontrado);
-
-        return toDto(usuAtualizado);
-    }
-
-    public void deleteById(UUID id) {
-        if (!usuRepo.existsById(id))
-            throw new RuntimeException("Usuário não existe");
-
-        usuRepo.deleteById(id);
-    }
-
-    private UsuarioDto toDto(Usuario usu) {
-        return new UsuarioDto(
+    private UsuarioResponseDto toResponseDto(Usuario usu) {
+        return new UsuarioResponseDto(
+                usu.getId(),
+                usu.getUsername(),
                 usu.getNome(),
                 usu.getSobrenome(),
                 usu.getEmail(),
-                usu.getSenha(),
-                usu.getDocumento(),
-                usu.getPaisOrigem(),
-                usu.getPaisResidencia(),
-                usu.getOng()
+                usu.getRole(),
+                usu.getFaceHash(),
+                usu.getCriadoEm(),
+                usu.getUltimoLogin()
         );
     }
-
 }

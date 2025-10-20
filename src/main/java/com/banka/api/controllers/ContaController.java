@@ -1,65 +1,74 @@
 package com.banka.api.controllers;
 
-import com.banka.api.records.ContaDto;
+import com.banka.api.records.conta.ContaCreateDto;
+import com.banka.api.records.conta.ContaResponseDto;
+import com.banka.api.records.conta.ContaUpdateDto;
 import com.banka.api.services.ContaService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/contas")
 public class ContaController {
+    private final ContaService contaServ;
 
-    private final ContaService contaService;
-
-    public ContaController(ContaService contaService) {
-        this.contaService = contaService;
+    public ContaController(ContaService contaServ) {
+        this.contaServ = contaServ;
     }
 
-    @PreAuthorize("hasRole('ROLE_ONG')")
     @PostMapping
-    public ResponseEntity<ContaDto> createConta(@RequestBody ContaDto contaDto) {
-        ContaDto novaConta = contaService.save(contaDto);
+    @PreAuthorize("hasRole('ROLE_ONG')")
+    public ResponseEntity<ContaResponseDto> createConta(@RequestBody ContaCreateDto usuCreateDto) {
+        ContaResponseDto contaCriada = contaServ.save(usuCreateDto);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(novaConta);
+        return ResponseEntity.status(HttpStatus.CREATED).body(contaCriada);
     }
 
-    @PreAuthorize("hasRole('ROLE_ONG')")
     @GetMapping
-    public ResponseEntity<List<ContaDto>> getAllContas() {
-        List<ContaDto> contas = contaService.findAll();
+    @PreAuthorize("hasRole('ROLE_ONG')")
+    public ResponseEntity<List<ContaResponseDto>> listAllContas() {
+        List<ContaResponseDto> contasListadas = contaServ.findAll();
 
-        return ResponseEntity.ok(contas);
+        return ResponseEntity.status(HttpStatus.FOUND).body(contasListadas);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ContaDto> getContaById(@PathVariable UUID id) {
-        ContaDto conta = contaService.findById(id);
+    @PreAuthorize("hasRole('ROLE_ONG')")
+    public ResponseEntity<ContaResponseDto> findContaById(@PathVariable UUID id) {
+        ContaResponseDto contaEncontrada = contaServ.findById(id);
 
-        return ResponseEntity.ok(conta);
+        return ResponseEntity.status(HttpStatus.FOUND).body(contaEncontrada);
     }
 
+    @PutMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ONG')")
-    @PutMapping("/{id}/saldo")
-    public ResponseEntity<ContaDto> updateSaldo(
+    public ResponseEntity<ContaResponseDto> updateConta(
             @PathVariable UUID id,
-            @RequestBody BigDecimal valor) {
-
-        ContaDto contaAtualizada = contaService.updateSaldo(id, valor);
+            @RequestBody ContaUpdateDto usuUptDto
+    ) {
+        ContaResponseDto contaAtualizada = contaServ.update(id, usuUptDto);
 
         return ResponseEntity.ok(contaAtualizada);
     }
 
+    @DeleteMapping
     @PreAuthorize("hasRole('ROLE_ONG')")
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteConta(@PathVariable UUID id) {
-        contaService.deleteById(id);
+    public ResponseEntity<Void> deleteAllContas() {
+        contaServ.deleteAll();
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ONG')")
+    public ResponseEntity<Void> deleteContaById(@PathVariable UUID id) {
+        contaServ.deleteById(id);
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

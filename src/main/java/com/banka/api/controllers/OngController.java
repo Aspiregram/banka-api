@@ -1,6 +1,8 @@
 package com.banka.api.controllers;
 
-import com.banka.api.records.OngDto;
+import com.banka.api.records.ong.OngCreateDto;
+import com.banka.api.records.ong.OngResponseDto;
+import com.banka.api.records.ong.OngUpdateDto;
 import com.banka.api.services.OngService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +15,6 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/ongs")
 public class OngController {
-
     private final OngService ongServ;
 
     public OngController(OngService ongServ) {
@@ -21,50 +22,53 @@ public class OngController {
     }
 
     @PostMapping
-    public ResponseEntity<OngDto> registerOng(@RequestBody OngDto ongDto) {
-        OngDto ongCriada = ongServ.save(ongDto);
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<OngResponseDto> createOng(@RequestBody OngCreateDto usuCreateDto) {
+        OngResponseDto ongCriada = ongServ.save(usuCreateDto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(ongCriada);
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping
-    public ResponseEntity<List<OngDto>> findAllOngs() {
-        List<OngDto> ongsEncontradas = ongServ.findAll();
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<List<OngResponseDto>> listAllOngs() {
+        List<OngResponseDto> ongsListadas = ongServ.findAll();
 
-        return ResponseEntity.status(HttpStatus.OK).body(ongsEncontradas);
+        return ResponseEntity.status(HttpStatus.FOUND).body(ongsListadas);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<OngDto> findOngById(@PathVariable UUID id) {
-        OngDto ongEncontrada = ongServ.findById(id);
-
-        return ResponseEntity.status(HttpStatus.OK).body(ongEncontrada);
-    }
-
-    @GetMapping("/email/{email}")
-    public ResponseEntity<OngDto> findOngByEmail(@PathVariable String email) {
-        OngDto ongEncontrada = ongServ.findByEmail(email);
-
-        return ResponseEntity.status(HttpStatus.OK).body(ongEncontrada);
-    }
-
-    @PreAuthorize("hasRole('ONG_ADMIN') or hasRole('ROLE_ADMIN')")
-    @PutMapping("/{id}")
-    public ResponseEntity<OngDto> updateOng(
-            @PathVariable UUID id,
-            @RequestBody OngDto ongDto) {
-        OngDto ongAtualizada = ongServ.update(id, ongDto);
-
-        return ResponseEntity.status(HttpStatus.OK).body(ongAtualizada);
-    }
-
     @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<OngResponseDto> findOngById(@PathVariable UUID id) {
+        OngResponseDto ongEncontrada = ongServ.findById(id);
+
+        return ResponseEntity.status(HttpStatus.FOUND).body(ongEncontrada);
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<OngResponseDto> updateOng(
+            @PathVariable UUID id,
+            @RequestBody OngUpdateDto usuUptDto
+    ) {
+        OngResponseDto ongAtualizada = ongServ.update(id, usuUptDto);
+
+        return ResponseEntity.ok(ongAtualizada);
+    }
+
+    @DeleteMapping
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<Void> deleteAllOngs() {
+        ongServ.deleteAll();
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteOngById(@PathVariable UUID id) {
         ongServ.deleteById(id);
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
-
 }

@@ -14,68 +14,53 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
+@Entity(name = "log_transacao_realizada")
 public class Transacao {
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "conta_origem_id")
-    @Column(nullable = false)
+    @JoinColumn(name = "conta_origem_id", nullable = false, updatable = false)
     private Conta contaOrigem;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "conta_destino_id")
-    @Column(nullable = false)
+    @JoinColumn(name = "conta_destino_id", nullable = false, updatable = false)
     private Conta contaDestino;
 
-    @Column(precision = 15, scale = 2, nullable = false)
+    @Column(precision = 15, scale = 2, nullable = false, updatable = false)
     private BigDecimal valorOriginal;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "moeda_origem_id", nullable = false)
+    @JoinColumn(name = "moeda_origem_id", nullable = false, updatable = false)
     private Moeda moedaOrigem;
 
-    @Column(precision = 15, scale = 2, nullable = false)
+    @Column(precision = 15, scale = 2, nullable = false, updatable = false)
     private BigDecimal valorConvertido;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "moeda_destino_id", nullable = false)
+    @JoinColumn(name = "moeda_destino_id", nullable = false, updatable = false)
     private Moeda moedaDestino;
 
-    @Column(precision = 10, scale = 4, nullable = false)
+    @Column(precision = 10, scale = 4, nullable = false, updatable = false)
     private BigDecimal taxaUtilizada;
 
-    private LocalDateTime dataTransacao;
-
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, updatable = false)
+    @Column(length = 19, nullable = false, updatable = false)
     private Tipo tipo;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(length = 17, nullable = false)
     private Status status;
 
-    @Column(name = "data_criacao", nullable = false, updatable = false)
-    private LocalDateTime dataCriacao;
-
-    @Column(name = "ultima_atualizacao")
-    private LocalDateTime ultimaAtualizacao;
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime dataTransacao;
 
     @PrePersist
-    protected void onCreate() {
+    public void onCreate() {
         status = Status.STATUS_PENDENTE;
-        dataCriacao = LocalDateTime.now();
 
         if (dataTransacao == null)
             dataTransacao = LocalDateTime.now();
     }
-
-    @PreUpdate
-    protected void onUpdate() {
-        ultimaAtualizacao = LocalDateTime.now();
-    }
-
 }

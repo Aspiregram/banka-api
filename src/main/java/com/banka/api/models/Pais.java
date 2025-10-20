@@ -5,7 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Data
@@ -13,7 +14,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @Entity
 public class Pais {
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -24,7 +24,11 @@ public class Pais {
     @Column(columnDefinition = "CHAR(3)", nullable = false, unique = true)
     private String isoCode;
 
-    @OneToMany(mappedBy = "pais", fetch = FetchType.LAZY)
-    private List<Moeda> moedas;
+    @OneToMany(mappedBy = "pais", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Set<Moeda> moedas;
 
+    @PrePersist
+    public void onCreate() {
+        moedas = new HashSet<>();
+    }
 }

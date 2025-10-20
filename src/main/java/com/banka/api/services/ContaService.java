@@ -1,87 +1,131 @@
 package com.banka.api.services;
 
+import com.banka.api.exceptions.EntityNotFoundException;
+import com.banka.api.exceptions.ResourceConflictException;
 import com.banka.api.models.Conta;
-import com.banka.api.records.ContaDto;
+import com.banka.api.models.Moeda;
+import com.banka.api.models.Transacao;
+import com.banka.api.records.conta.ContaCreateDto;
+import com.banka.api.records.conta.ContaResponseDto;
+import com.banka.api.records.conta.ContaUpdateDto;
+import com.banka.api.repositories.ClienteRepository;
 import com.banka.api.repositories.ContaRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 public class ContaService {
-
     private final ContaRepository contaRepo;
+    private final ClienteRepository clienteRepo;
 
-    public ContaService(ContaRepository contaRepo) {
+    public ContaService(ContaRepository contaRepo, ClienteRepository clienteRepo) {
         this.contaRepo = contaRepo;
+        this.clienteRepo = clienteRepo;
     }
 
+    // POST
     @Transactional
-    public ContaDto save(ContaDto contaDto) {
-        if (contaRepo.existsByUsuarioIdAndMoedaId
-                (contaDto.usuario().getId(), contaDto.moeda().getId())) {
-            throw new RuntimeException("O usuário já possui uma conta nesta moeda");
-        }
+    public ContaResponseDto save(ContaCreateDto contaCreateDto) {
+        if (contaRepo.existsByCliente(contaCreateDto.cliente()))
+            throw new ResourceConflictException
+                    ("Uma conta já possui esse cliente");
 
-        Conta conta = new Conta(
-                null,
-                contaDto.usuario(),
-                contaDto.moeda(),
-                null,
-                null
-        );
-
+        Conta conta = fromCreateDto(contaCreateDto);
         Conta contaSalva = contaRepo.save(conta);
 
-        return toDto(contaSalva);
+        return toResponseDto(contaSalva);
     }
 
-    public List<ContaDto> findAll() {
-        return contaRepo.findAll().stream()
-                .map(this::toDto)
+    // GET
+    public List<ContaResponseDto> findAll() {
+        List<Conta> contas = contaRepo.findAll();
+
+        if (contas.isEmpty())
+            throw new EntityNotFoundException
+                    ("Não há contas registradas");
+
+        return contas.stream()
+                .map(this::toResponseDto)
                 .collect(Collectors.toList());
     }
 
-    public ContaDto findById(UUID id) {
-        return toDto(findEntityById(id));
+    // GET
+    public ContaResponseDto findById(UUID id) {
+        Conta contaEncontrada = contaRepo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException
+                        ("A conta com ID \"" + id + "\" não pode ser encontrada"));
+
+        return toResponseDto(contaEncontrada);
     }
 
-    private Conta findEntityById(UUID id) {
-        return contaRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Conta bancária não encontrada"));
-    }
-
+    // PUT
     @Transactional
-    public ContaDto updateSaldo(UUID id, BigDecimal valor) {
-        Conta conta = findEntityById(id);
+    public ContaResponseDto update(UUID id, ContaUpdateDto contaUptDto) {
+        Conta contaEncontrada = contaRepo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException
+                        ("A conta com ID \"" + id + "\" não pode ser encontrada"));
 
-        if (conta.getSaldo().add(valor).compareTo(BigDecimal.ZERO) < 0)
-            throw new RuntimeException("Saldo insuficiente para esta operação");
 
+        contaEncontrada.setCliente(clienteRepo.findById(contaUptDto.cliente())
+                .orElseThrow(() -> new EntityNotFoundException
+                        ("O cliente com ID \"" + contaUptDto.cliente() + "\" não pode ser encontrado")));
+        contaEncontrada.setSaldo(contaUptDto.saldo());
 
-        conta.setSaldo(conta.getSaldo().add(valor));
-        Conta contaAtualizada = contaRepo.save(conta);
+        Conta contaAtualizada = contaRepo.save(contaEncontrada);
 
-        return toDto(contaAtualizada);
+        return toResponseDto(contaAtualizada);
     }
 
+    // DELETE
+    public void deleteAll() {
+        List<Conta> contas = contaRepo.findAll();
+
+        if (contas.isEmpty())
+            throw new EntityNotFoundException
+                    ("Não há contas registradas");
+
+        contaRepo.deleteAll();
+    }
+
+    // DELETE
     public void deleteById(UUID id) {
-        if (!contaRepo.existsById(id))
-            throw new RuntimeException("Conta não existe");
+        if (contaRepo.findById(id).isEmpty())
+            throw new EntityNotFoundException
+                    ("A conta com ID \"" + id + "\" não pode ser encontrada");
 
         contaRepo.deleteById(id);
     }
 
-    private ContaDto toDto(Conta conta) {
-        return new ContaDto(
-                conta.getUsuario(),
-                conta.getMoeda(),
-                conta.getSaldo()
-        );
+    private Conta fromCreateDto(ContaCreateDto contaCreateDto) {
+        return new Conta(
+                null,
+                clienteRepo.findById(contaCreateDto.cliente())
+                        .orElseThrow(() -> new EntityNotFoundException
+                                ("O cliente com ID \"" + contaCreateDto.cliente() + "\" não pode ser encontrado")),
+                null,
+                null,
+                contaCreateDto.saldo(),
+                null);
     }
 
+    private ContaResponseDto toResponseDto(Conta conta) {
+        return new ContaResponseDto(
+                conta.getId(),
+                conta.getCliente().getId(),
+                conta.getMoedas()
+                        .stream()
+                        .map(Moeda::getId)
+                        .collect(Collectors.toSet()),
+                conta.getTransacoes()
+                        .stream()
+                        .map(Transacao::getId)
+                        .collect(Collectors.toSet()),
+                conta.getSaldo(),
+                conta.getCriadoEm()
+        );
+    }
 }
