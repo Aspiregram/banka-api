@@ -9,7 +9,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/logs")
@@ -21,7 +20,7 @@ public class LogSenhaController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ROLE_ONG')")
+    @PreAuthorize("hasRole('ONG')")
     public ResponseEntity<LogSenhaResponseDto> createLog(@RequestBody LogSenhaCreateDto usuCreateDto) {
         LogSenhaResponseDto logCriado = logSenhaServ.save(usuCreateDto);
 
@@ -29,7 +28,7 @@ public class LogSenhaController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ROLE_ONG')")
+    @PreAuthorize("hasRole('ONG')")
     public ResponseEntity<List<LogSenhaResponseDto>> listAllLogs() {
         List<LogSenhaResponseDto> logsListados = logSenhaServ.findAll();
 
@@ -37,15 +36,15 @@ public class LogSenhaController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ONG')")
-    public ResponseEntity<LogSenhaResponseDto> findLogById(@PathVariable UUID id) {
+    @PreAuthorize("hasRole('ONG')")
+    public ResponseEntity<LogSenhaResponseDto> findLogById(@PathVariable Long id) {
         LogSenhaResponseDto logEncontrado = logSenhaServ.findById(id);
 
         return ResponseEntity.status(HttpStatus.FOUND).body(logEncontrado);
     }
 
     @DeleteMapping
-    @PreAuthorize("hasRole('ROLE_ONG')")
+    @PreAuthorize("hasRole('ONG')")
     public ResponseEntity<Void> deleteAllLogs() {
         logSenhaServ.deleteAll();
 
@@ -53,8 +52,8 @@ public class LogSenhaController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ONG')")
-    public ResponseEntity<Void> deleteLogById(@PathVariable UUID id) {
+    @PreAuthorize("hasRole('ONG')")
+    public ResponseEntity<Void> deleteLogById(@PathVariable Long id) {
         logSenhaServ.deleteById(id);
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

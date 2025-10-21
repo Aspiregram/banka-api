@@ -19,11 +19,11 @@ import java.io.IOException;
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtService jwtServ;
-    private final UsersDetailsService userDetServ;
+    private final UsersDetailsService usersDetServ;
 
-    public JwtAuthFilter(JwtService jwtServ, UsersDetailsService userDetServ) {
+    public JwtAuthFilter(JwtService jwtServ, UsersDetailsService usersDetServ) {
         this.jwtServ = jwtServ;
-        this.userDetServ = userDetServ;
+        this.usersDetServ = usersDetServ;
     }
 
     @Override
@@ -36,21 +36,30 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         if (header == null || !header.startsWith("Bearer ")) {
             chain.doFilter(req, res);
+
             return;
         }
 
         String token = header.substring(7);
+
+        if (token.isBlank()) {
+            chain.doFilter(req, res);
+
+            return;
+        }
+
         String username;
 
         try {
             username = jwtServ.extractUsername(token);
         } catch (JwtException e) {
             chain.doFilter(req, res);
+
             return;
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDet = userDetServ.loadUserByUsername(username);
+            UserDetails userDet = usersDetServ.loadUserByUsername(username);
 
             if (jwtServ.isTokenValid(token, userDet.getUsername())) {
                 var auth = new UsernamePasswordAuthenticationToken(userDet, null, userDet.getAuthorities());

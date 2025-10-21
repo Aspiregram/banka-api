@@ -10,7 +10,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/ongs")
@@ -22,7 +21,7 @@ public class OngController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<OngResponseDto> createOng(@RequestBody OngCreateDto usuCreateDto) {
         OngResponseDto ongCriada = ongServ.save(usuCreateDto);
 
@@ -30,7 +29,7 @@ public class OngController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<OngResponseDto>> listAllOngs() {
         List<OngResponseDto> ongsListadas = ongServ.findAll();
 
@@ -38,17 +37,17 @@ public class OngController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<OngResponseDto> findOngById(@PathVariable UUID id) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<OngResponseDto> findOngById(@PathVariable Long id) {
         OngResponseDto ongEncontrada = ongServ.findById(id);
 
         return ResponseEntity.status(HttpStatus.FOUND).body(ongEncontrada);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<OngResponseDto> updateOng(
-            @PathVariable UUID id,
+            @PathVariable Long id,
             @RequestBody OngUpdateDto usuUptDto
     ) {
         OngResponseDto ongAtualizada = ongServ.update(id, usuUptDto);
@@ -57,7 +56,7 @@ public class OngController {
     }
 
     @DeleteMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteAllOngs() {
         ongServ.deleteAll();
 
@@ -65,8 +64,8 @@ public class OngController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<Void> deleteOngById(@PathVariable UUID id) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteOngById(@PathVariable Long id) {
         ongServ.deleteById(id);
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

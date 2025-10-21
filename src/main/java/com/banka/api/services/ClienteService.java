@@ -10,28 +10,23 @@ import com.banka.api.records.usuario.UsuarioResponseDto;
 import com.banka.api.repositories.ClienteRepository;
 import com.banka.api.repositories.OngRepository;
 import com.banka.api.repositories.PaisRepository;
-import com.banka.api.repositories.UsuarioRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 public class ClienteService {
     private final ClienteRepository clienteRepo;
-    private final UsuarioRepository usuRepo;
     private final PasswordEncoder passEncod;
     private final PaisRepository paisRepo;
     private final OngRepository ongRepo;
 
-    public ClienteService(ClienteRepository clienteRepo, UsuarioRepository usuRepo,
-                          PasswordEncoder passEncod, PaisRepository paisRepo,
-                          OngRepository ongRepo) {
+    public ClienteService(ClienteRepository clienteRepo, PasswordEncoder passEncod,
+                          PaisRepository paisRepo, OngRepository ongRepo) {
         this.clienteRepo = clienteRepo;
-        this.usuRepo = usuRepo;
         this.passEncod = passEncod;
         this.paisRepo = paisRepo;
         this.ongRepo = ongRepo;
@@ -40,11 +35,24 @@ public class ClienteService {
     // POST
     @Transactional
     public ClienteResponseDto save(ClienteCreateDto clienteCreateDto) {
-        if (usuRepo.existsByEmail(clienteCreateDto.usuCreateDto().email()))
+        if (clienteRepo.existsByUsername(clienteCreateDto.usuCreateDto().username())
+                || clienteRepo.existsByEmail(clienteCreateDto.usuCreateDto().email()))
             throw new ResourceConflictException
-                    ("Um cliente já possui esse email");
+                    ("Um cliente já possui esse username e/ou email");
 
         Cliente cliente = fromCreateDto(clienteCreateDto);
+
+        cliente.setId(null);
+        cliente.setUsername(clienteCreateDto.usuCreateDto().username());
+        cliente.setNome(clienteCreateDto.usuCreateDto().nome());
+        cliente.setSobrenome(clienteCreateDto.usuCreateDto().sobrenome());
+        cliente.setEmail(clienteCreateDto.usuCreateDto().email());
+        cliente.setSenha(passEncod.encode(
+                clienteCreateDto.usuCreateDto().senha()));
+        cliente.setRole(null);
+        cliente.setCriadoEm(null);
+        cliente.setUltimoLogin(null);
+
         Cliente clienteSalvo = clienteRepo.save(cliente);
 
         return toResponseDto(clienteSalvo);
@@ -64,7 +72,7 @@ public class ClienteService {
     }
 
     // GET
-    public ClienteResponseDto findById(UUID id) {
+    public ClienteResponseDto findById(Long id) {
         Cliente clienteEncontrado = clienteRepo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException
                         ("O cliente com ID \"" + id + "\" não pode ser encontrado"));
@@ -74,7 +82,7 @@ public class ClienteService {
 
     // PUT
     @Transactional
-    public ClienteResponseDto update(UUID id, ClienteUpdateDto clienteUptDto) {
+    public ClienteResponseDto update(Long id, ClienteUpdateDto clienteUptDto) {
         Cliente clienteEncontrado = clienteRepo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException
                         ("O cliente com ID \"" + id + "\" não pode ser encontrado"));
@@ -119,7 +127,7 @@ public class ClienteService {
     }
 
     // DELETE
-    public void deleteById(UUID id) {
+    public void deleteById(Long id) {
         if (clienteRepo.findById(id).isEmpty())
             throw new EntityNotFoundException
                     ("O cliente com ID \"" + id + "\" não pode ser encontrado");
@@ -141,7 +149,7 @@ public class ClienteService {
                 ongRepo.findById(clienteCreateDto.ong())
                         .orElseThrow(() -> new EntityNotFoundException
                                 ("A ONG com ID \"" + clienteCreateDto.ong()
-                                        + "\" não pode ser encontrad")),
+                                        + "\" não pode ser encontrada")),
                 null
         );
     }
@@ -155,7 +163,6 @@ public class ClienteService {
                         cliente.getSobrenome(),
                         cliente.getEmail(),
                         cliente.getRole(),
-                        cliente.getFaceHash(),
                         cliente.getCriadoEm(),
                         cliente.getUltimoLogin()
                 ),

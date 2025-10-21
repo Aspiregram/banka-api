@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 public record MoedaCreateDto(
         @NotBlank(message = "Nome não deve ser nulo, vazio ou em branco")
@@ -23,7 +22,6 @@ public record MoedaCreateDto(
         BigDecimal taxaConversao,
 
         @NotBlank(message = "País não deve ser nulo, vazio ou em branco")
-        UUID pais,
-        UUID conta
+        Long pais
 ) {
 }

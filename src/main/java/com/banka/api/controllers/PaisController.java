@@ -10,7 +10,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/paises")
@@ -22,7 +21,7 @@ public class PaisController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PaisResponseDto> createPais(@RequestBody PaisCreateDto usuCreateDto) {
         PaisResponseDto paisCriado = paisServ.save(usuCreateDto);
 
@@ -30,7 +29,7 @@ public class PaisController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ONG')")
     public ResponseEntity<List<PaisResponseDto>> listAllPaises() {
         List<PaisResponseDto> paisesListados = paisServ.findAll();
 
@@ -38,17 +37,17 @@ public class PaisController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<PaisResponseDto> findPaisById(@PathVariable UUID id) {
+    @PreAuthorize("hasAnyRole('ADMIN', 'ONG')")
+    public ResponseEntity<PaisResponseDto> findPaisById(@PathVariable Long id) {
         PaisResponseDto paisEncontrado = paisServ.findById(id);
 
         return ResponseEntity.status(HttpStatus.FOUND).body(paisEncontrado);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PaisResponseDto> updatePais(
-            @PathVariable UUID id,
+            @PathVariable Long id,
             @RequestBody PaisUpdateDto usuUptDto
     ) {
         PaisResponseDto paisAtualizado = paisServ.update(id, usuUptDto);
@@ -57,7 +56,7 @@ public class PaisController {
     }
 
     @DeleteMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteAllPaises() {
         paisServ.deleteAll();
 
@@ -65,8 +64,8 @@ public class PaisController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<Void> deletePaisById(@PathVariable UUID id) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deletePaisById(@PathVariable Long id) {
         paisServ.deleteById(id);
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

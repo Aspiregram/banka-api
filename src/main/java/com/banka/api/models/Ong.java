@@ -1,6 +1,7 @@
 package com.banka.api.models;
 
 import com.banka.api.enums.Role;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -27,12 +28,18 @@ public class Ong extends Usuario {
     private BigDecimal saldoGlobal;
 
     @OneToMany(mappedBy = "ong", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonIgnore
     private Set<Cliente> clientes;
 
     @Override
     public void onCreate() {
-        super.setRole(Role.ROLE_ONG);
         clientes = new HashSet<>();
+
+        if (saldoGlobal == null)
+            saldoGlobal = BigDecimal.ZERO;
+
+        if (super.getRole() == null)
+            super.setRole(Role.ROLE_ONG);
 
         super.onCreate();
     }

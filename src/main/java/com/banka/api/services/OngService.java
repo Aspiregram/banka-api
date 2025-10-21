@@ -10,26 +10,22 @@ import com.banka.api.records.ong.OngUpdateDto;
 import com.banka.api.records.usuario.UsuarioResponseDto;
 import com.banka.api.repositories.OngRepository;
 import com.banka.api.repositories.PaisRepository;
-import com.banka.api.repositories.UsuarioRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 public class OngService {
     private final OngRepository ongRepo;
-    private final UsuarioRepository usuRepo;
     private final PasswordEncoder passEncod;
     private final PaisRepository paisRepo;
 
-    public OngService(OngRepository ongRepo, UsuarioRepository usuRepo,
-                      PasswordEncoder passEncod, PaisRepository paisRepo) {
+    public OngService(OngRepository ongRepo, PasswordEncoder passEncod,
+                      PaisRepository paisRepo) {
         this.ongRepo = ongRepo;
-        this.usuRepo = usuRepo;
         this.passEncod = passEncod;
         this.paisRepo = paisRepo;
     }
@@ -37,11 +33,24 @@ public class OngService {
     // POST
     @Transactional
     public OngResponseDto save(OngCreateDto ongCreateDto) {
-        if (usuRepo.existsByEmail(ongCreateDto.usuCreateDto().email()))
+        if (ongRepo.existsByUsername(ongCreateDto.usuCreateDto().username())
+                || ongRepo.existsByEmail(ongCreateDto.usuCreateDto().email()))
             throw new ResourceConflictException
-                    ("Uma ONG já possui esse email");
+                    ("Uma ONG já possui esse username e/ou email");
 
         Ong ong = fromCreateDto(ongCreateDto);
+
+        ong.setId(null);
+        ong.setUsername(ongCreateDto.usuCreateDto().username());
+        ong.setNome(ongCreateDto.usuCreateDto().nome());
+        ong.setSobrenome(ongCreateDto.usuCreateDto().sobrenome());
+        ong.setEmail(ongCreateDto.usuCreateDto().email());
+        ong.setSenha(passEncod.encode(
+                ongCreateDto.usuCreateDto().senha()));
+        ong.setRole(null);
+        ong.setCriadoEm(null);
+        ong.setUltimoLogin(null);
+
         Ong ongSalva = ongRepo.save(ong);
 
         return toResponseDto(ongSalva);
@@ -61,7 +70,7 @@ public class OngService {
     }
 
     // GET
-    public OngResponseDto findById(UUID id) {
+    public OngResponseDto findById(Long id) {
         Ong ongEncontrada = ongRepo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException
                         ("A ONG com ID \"" + id + "\" não pode ser encontrada"));
@@ -71,7 +80,7 @@ public class OngService {
 
     // PUT
     @Transactional
-    public OngResponseDto update(UUID id, OngUpdateDto ongUptDto) {
+    public OngResponseDto update(Long id, OngUpdateDto ongUptDto) {
         Ong ongEncontrada = ongRepo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException
                         ("A ONG com ID \"" + id + "\" não pode ser encontrada"));
@@ -107,7 +116,7 @@ public class OngService {
     }
 
     // DELETE
-    public void deleteById(UUID id) {
+    public void deleteById(Long id) {
         if (ongRepo.findById(id).isEmpty())
             throw new EntityNotFoundException
                     ("A ONG com ID \"" + id + "\" não pode ser encontrada");
@@ -136,7 +145,6 @@ public class OngService {
                         ong.getSobrenome(),
                         ong.getEmail(),
                         ong.getRole(),
-                        ong.getFaceHash(),
                         ong.getCriadoEm(),
                         ong.getUltimoLogin()
                 ),

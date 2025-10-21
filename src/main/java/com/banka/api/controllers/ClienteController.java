@@ -10,7 +10,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/clientes")
@@ -22,7 +21,7 @@ public class ClienteController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ROLE_ONG')")
+    @PreAuthorize("hasRole('ONG')")
     public ResponseEntity<ClienteResponseDto> createCliente(@RequestBody ClienteCreateDto usuCreateDto) {
         ClienteResponseDto clienteCriado = clienteServ.save(usuCreateDto);
 
@@ -30,7 +29,7 @@ public class ClienteController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ROLE_ONG')")
+    @PreAuthorize("hasRole('ONG')")
     public ResponseEntity<List<ClienteResponseDto>> listAllClientes() {
         List<ClienteResponseDto> clientesListados = clienteServ.findAll();
 
@@ -38,17 +37,17 @@ public class ClienteController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ONG')")
-    public ResponseEntity<ClienteResponseDto> findClienteById(@PathVariable UUID id) {
+    @PreAuthorize("hasRole('ONG')")
+    public ResponseEntity<ClienteResponseDto> findClienteById(@PathVariable Long id) {
         ClienteResponseDto clienteEncontrado = clienteServ.findById(id);
 
         return ResponseEntity.status(HttpStatus.FOUND).body(clienteEncontrado);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ONG')")
+    @PreAuthorize("hasRole('ONG')")
     public ResponseEntity<ClienteResponseDto> updateCliente(
-            @PathVariable UUID id,
+            @PathVariable Long id,
             @RequestBody ClienteUpdateDto usuUptDto
     ) {
         ClienteResponseDto clienteAtualizado = clienteServ.update(id, usuUptDto);
@@ -57,7 +56,7 @@ public class ClienteController {
     }
 
     @DeleteMapping
-    @PreAuthorize("hasRole('ROLE_ONG')")
+    @PreAuthorize("hasRole('ONG')")
     public ResponseEntity<Void> deleteAllClientes() {
         clienteServ.deleteAll();
 
@@ -65,8 +64,8 @@ public class ClienteController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ONG')")
-    public ResponseEntity<Void> deleteClienteById(@PathVariable UUID id) {
+    @PreAuthorize("hasRole('ONG')")
+    public ResponseEntity<Void> deleteClienteById(@PathVariable Long id) {
         clienteServ.deleteById(id);
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

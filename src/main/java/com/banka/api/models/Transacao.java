@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -17,8 +16,8 @@ import java.util.UUID;
 @Entity(name = "log_transacao_realizada")
 public class Transacao {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "conta_origem_id", nullable = false, updatable = false)
@@ -59,8 +58,6 @@ public class Transacao {
     @PrePersist
     public void onCreate() {
         status = Status.STATUS_PENDENTE;
-
-        if (dataTransacao == null)
-            dataTransacao = LocalDateTime.now();
+        dataTransacao = LocalDateTime.now();
     }
 }

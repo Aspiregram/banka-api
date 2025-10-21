@@ -10,7 +10,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/contas")
@@ -22,7 +21,7 @@ public class ContaController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ROLE_ONG')")
+    @PreAuthorize("hasRole('ONG')")
     public ResponseEntity<ContaResponseDto> createConta(@RequestBody ContaCreateDto usuCreateDto) {
         ContaResponseDto contaCriada = contaServ.save(usuCreateDto);
 
@@ -30,7 +29,7 @@ public class ContaController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ROLE_ONG')")
+    @PreAuthorize("hasRole('ONG')")
     public ResponseEntity<List<ContaResponseDto>> listAllContas() {
         List<ContaResponseDto> contasListadas = contaServ.findAll();
 
@@ -38,17 +37,17 @@ public class ContaController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ONG')")
-    public ResponseEntity<ContaResponseDto> findContaById(@PathVariable UUID id) {
+    @PreAuthorize("hasRole('ONG')")
+    public ResponseEntity<ContaResponseDto> findContaById(@PathVariable Long id) {
         ContaResponseDto contaEncontrada = contaServ.findById(id);
 
         return ResponseEntity.status(HttpStatus.FOUND).body(contaEncontrada);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ONG')")
+    @PreAuthorize("hasRole('ONG')")
     public ResponseEntity<ContaResponseDto> updateConta(
-            @PathVariable UUID id,
+            @PathVariable Long id,
             @RequestBody ContaUpdateDto usuUptDto
     ) {
         ContaResponseDto contaAtualizada = contaServ.update(id, usuUptDto);
@@ -57,7 +56,7 @@ public class ContaController {
     }
 
     @DeleteMapping
-    @PreAuthorize("hasRole('ROLE_ONG')")
+    @PreAuthorize("hasRole('ONG')")
     public ResponseEntity<Void> deleteAllContas() {
         contaServ.deleteAll();
 
@@ -65,8 +64,8 @@ public class ContaController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ONG')")
-    public ResponseEntity<Void> deleteContaById(@PathVariable UUID id) {
+    @PreAuthorize("hasRole('ONG')")
+    public ResponseEntity<Void> deleteContaById(@PathVariable Long id) {
         contaServ.deleteById(id);
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

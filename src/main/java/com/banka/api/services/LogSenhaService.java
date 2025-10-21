@@ -11,7 +11,6 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -50,7 +49,7 @@ public class LogSenhaService {
     }
 
     // GET
-    public LogSenhaResponseDto findById(UUID id) {
+    public LogSenhaResponseDto findById(Long id) {
         LogSenha logSenhaEncontrado = logSenhaRepo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException
                         ("O log com ID \"" + id + "\" não pode ser encontrado"));
@@ -70,7 +69,7 @@ public class LogSenhaService {
     }
 
     // DELETE
-    public void deleteById(UUID id) {
+    public void deleteById(Long id) {
         if (logSenhaRepo.findById(id).isEmpty())
             throw new EntityNotFoundException
                     ("O log com ID \"" + id + "\" não pode ser encontrado");

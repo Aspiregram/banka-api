@@ -90,32 +90,7 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <!-- Dependência do OpenCV para reconhecimento facial -->
-        <dependency>
-            <groupId>org.openpnp</groupId>
-            <artifactId>opencv</artifactId>
-            <version>4.6.0-0</version>
-        </dependency>
-
     </dependencies>
-
-    <profiles>
-        <profile>
-            <id>opencv-enabled</id>
-            <dependencies>
-                <dependency>
-                    <groupId>org.openpnp</groupId>
-                    <artifactId>opencv</artifactId>
-                    <version>4.6.0-0</version>
-                </dependency>
-            </dependencies>
-            <properties>
-                <!-- Caminho para a biblioteca nativa do OpenCV (ajuste conforme seu sistema) -->
-                <opencv.library.path>/path/to/opencv/build/java/x64/opencv_java460.dll</opencv.library.path>
-            </properties>
-        </profile>
-    </profiles>
 
     <build>
         <plugins>

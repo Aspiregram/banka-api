@@ -6,7 +6,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 public record OngCreateDto(
         UsuarioCreateDto usuCreateDto,
@@ -16,7 +15,7 @@ public record OngCreateDto(
         String telefone,
 
         @NotBlank(message = "País não deve ser nulo, vazio ou em branco")
-        UUID pais,
+        Long pais,
 
         @NotBlank(message = "Saldo global não deve ser nulo, vazio ou em branco")
         @Digits(integer = 15, fraction = 2,

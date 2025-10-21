@@ -12,7 +12,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -20,8 +19,8 @@ import java.util.UUID;
 @MappedSuperclass
 public class Usuario implements UserDetails {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(length = 65, nullable = false, unique = true)
     private String username;
@@ -41,8 +40,6 @@ public class Usuario implements UserDetails {
     @Enumerated(EnumType.STRING)
     @Column(length = 12, nullable = false, updatable = false)
     private Role role;
-
-    private String faceHash;
 
     @Column(name = "data_criacao", nullable = false, updatable = false)
     private LocalDateTime criadoEm;

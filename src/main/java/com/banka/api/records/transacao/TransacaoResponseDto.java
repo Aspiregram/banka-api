@@ -5,16 +5,15 @@ import com.banka.api.enums.Tipo;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 public record TransacaoResponseDto(
-        UUID id,
-        UUID contaOrigem,
-        UUID contaDestino,
+        Long id,
+        Long contaOrigem,
+        Long contaDestino,
         BigDecimal valorOriginal,
-        UUID moedaOrigem,
+        Long moedaOrigem,
         BigDecimal valorConvertido,
-        UUID moedaDestino,
+        Long moedaDestino,
         BigDecimal taxaUtilizada,
         Tipo tipo,
         Status status,

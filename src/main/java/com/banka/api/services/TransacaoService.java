@@ -1,5 +1,6 @@
 package com.banka.api.services;
 
+import com.banka.api.enums.Tipo;
 import com.banka.api.exceptions.EntityNotFoundException;
 import com.banka.api.models.Transacao;
 import com.banka.api.records.transacao.TransacaoCreateDto;
@@ -11,7 +12,6 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,6 +31,9 @@ public class TransacaoService {
     @Transactional
     public TransacaoResponseDto save(TransacaoCreateDto transacaoCreateDto) {
         Transacao transacao = fromCreateDto(transacaoCreateDto);
+
+        transacao.setTipo(Tipo.fromString(transacaoCreateDto.tipo().name()));
+
         Transacao transacaoSalva = transacaoRepo.save(transacao);
 
         return toResponseDto(transacaoSalva);
@@ -50,7 +53,7 @@ public class TransacaoService {
     }
 
     // GET
-    public TransacaoResponseDto findById(UUID id) {
+    public TransacaoResponseDto findById(Long id) {
         Transacao transacaoEncontrada = transacaoRepo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException
                         ("A transação com ID \"" + id + "\" não pode ser encontrada"));
@@ -70,7 +73,7 @@ public class TransacaoService {
     }
 
     // DELETE
-    public void deleteById(UUID id) {
+    public void deleteById(Long id) {
         if (transacaoRepo.findById(id).isEmpty())
             throw new EntityNotFoundException
                     ("A transação com ID \"" + id + "\" não pode ser encontrada");
@@ -100,9 +103,9 @@ public class TransacaoService {
                                 ("A moeda destinária com ID \"" + transacaoCreateDto.moedaDestino()
                                         + "\" não pode ser encontrada")),
                 transacaoCreateDto.taxaUtilizada(),
-                transacaoCreateDto.tipo(),
-                transacaoCreateDto.status(),
-                transacaoCreateDto.dataTransacao());
+                null,
+                null,
+                null);
     }
 
     private TransacaoResponseDto toResponseDto(Transacao transacao) {

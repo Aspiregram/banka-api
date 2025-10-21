@@ -7,9 +7,6 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -17,19 +14,17 @@ import java.util.UUID;
 @Entity
 public class Conta {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, optional = false)
     private Cliente cliente;
 
-    @OneToMany(mappedBy = "conta", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Set<Moeda> moedas;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "moeda_id", nullable = false)
+    private Moeda moeda;
 
-    @OneToMany(mappedBy = "conta", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Set<Transacao> transacoes;
-
-    @Column(precision = 15, scale = 2, nullable = false)
+    @Column(precision = 15, scale = 2)
     private BigDecimal saldo;
 
     @Column(name = "data_criacao", nullable = false, updatable = false)
@@ -37,9 +32,9 @@ public class Conta {
 
     @PrePersist
     public void onCreate() {
-        moedas = new HashSet<>();
-        transacoes = new HashSet<>();
-        saldo = BigDecimal.ZERO;
+        if (saldo == null)
+            saldo = BigDecimal.ZERO;
+
         criadaEm = LocalDateTime.now();
     }
 }

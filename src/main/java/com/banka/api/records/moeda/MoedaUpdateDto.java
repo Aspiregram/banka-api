@@ -4,7 +4,6 @@ import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 public record MoedaUpdateDto(
         @Size(max = 50, message = "Nome não deve ultrapassar 50 caracteres em tamanho")
@@ -17,7 +16,6 @@ public record MoedaUpdateDto(
                 message = "Taxa de conversão não deve ultrapassar" +
                         "de 10 unidades e 4 casas após a vírgula")
         BigDecimal taxaConversao,
-        UUID pais,
-        UUID conta
+        Long pais
 ) {
 }

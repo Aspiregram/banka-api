@@ -2,7 +2,6 @@ package com.banka.api.services;
 
 import com.banka.api.exceptions.EntityNotFoundException;
 import com.banka.api.exceptions.ResourceConflictException;
-import com.banka.api.models.Moeda;
 import com.banka.api.models.Pais;
 import com.banka.api.records.pais.PaisCreateDto;
 import com.banka.api.records.pais.PaisResponseDto;
@@ -12,7 +11,6 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -50,7 +48,7 @@ public class PaisService {
     }
 
     // GET
-    public PaisResponseDto findById(UUID id) {
+    public PaisResponseDto findById(Long id) {
         Pais paisEncontrado = paisRepo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException
                         ("O país com ID \"" + id + "\" não pode ser encontrado"));
@@ -60,7 +58,7 @@ public class PaisService {
 
     // PUT
     @Transactional
-    public PaisResponseDto update(UUID id, PaisUpdateDto paisUptDto) {
+    public PaisResponseDto update(Long id, PaisUpdateDto paisUptDto) {
         Pais paisEncontrado = paisRepo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException
                         ("O país com ID \"" + id + "\" não pode ser encontrado"));
@@ -85,7 +83,7 @@ public class PaisService {
     }
 
     // DELETE
-    public void deleteById(UUID id) {
+    public void deleteById(Long id) {
         if (paisRepo.findById(id).isEmpty())
             throw new EntityNotFoundException
                     ("O país com ID \"" + id + "\" não pode ser encontrado");
@@ -97,8 +95,7 @@ public class PaisService {
         return new Pais(
                 null,
                 paisCreateDto.nome(),
-                paisCreateDto.isoCode(),
-                null
+                paisCreateDto.isoCode()
         );
     }
 
@@ -106,10 +103,7 @@ public class PaisService {
         return new PaisResponseDto(
                 pais.getId(),
                 pais.getNome(),
-                pais.getIsoCode(),
-                pais.getMoedas().stream()
-                        .map(Moeda::getId)
-                        .collect(Collectors.toSet())
+                pais.getIsoCode()
         );
     }
 }

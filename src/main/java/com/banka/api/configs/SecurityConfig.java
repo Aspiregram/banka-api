@@ -29,8 +29,9 @@ public class SecurityConfig {
                         (a ->
                                 a
                                         .requestMatchers("/auth/**").permitAll()
-                                        .requestMatchers("/ongs/**").hasRole("ROLE_ADMIN")
-                                        .requestMatchers("/clientes/**").hasRole("ROLE_ONG")
+                                        .requestMatchers("/admins/**").hasRole("ADMIN")
+                                        .requestMatchers("/ongs/**").hasRole("ADMIN")
+                                        .requestMatchers("/clientes/**").hasRole("ONG")
                                         .anyRequest().authenticated());
 
         httpSec.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

@@ -9,7 +9,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/transacoes")
@@ -21,7 +20,7 @@ public class TransacaoController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ROLE_CLIENTE')")
+    @PreAuthorize("hasRole('CLIENTE')")
     public ResponseEntity<TransacaoResponseDto> createTransacao(@RequestBody TransacaoCreateDto usuCreateDto) {
         TransacaoResponseDto transacaoCriada = transacaoServ.save(usuCreateDto);
 
@@ -29,7 +28,7 @@ public class TransacaoController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ROLE_ONG', 'ROLE_CLIENTE')")
+    @PreAuthorize("hasAnyRole('ONG', 'CLIENTE')")
     public ResponseEntity<List<TransacaoResponseDto>> listAllTransacoes() {
         List<TransacaoResponseDto> transacoesListadas = transacaoServ.findAll();
 
@@ -37,15 +36,15 @@ public class TransacaoController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ROLE_ONG', 'ROLE_CLIENTE')")
-    public ResponseEntity<TransacaoResponseDto> findTransacaoById(@PathVariable UUID id) {
+    @PreAuthorize("hasAnyRole('ONG', 'CLIENTE')")
+    public ResponseEntity<TransacaoResponseDto> findTransacaoById(@PathVariable Long id) {
         TransacaoResponseDto transacaoEncontrada = transacaoServ.findById(id);
 
         return ResponseEntity.status(HttpStatus.FOUND).body(transacaoEncontrada);
     }
 
     @DeleteMapping
-    @PreAuthorize("hasRole('ROLE_ONG')")
+    @PreAuthorize("hasRole('ONG')")
     public ResponseEntity<Void> deleteAllTransacoes() {
         transacaoServ.deleteAll();
 
@@ -53,8 +52,8 @@ public class TransacaoController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ONG')")
-    public ResponseEntity<Void> deleteTransacaoById(@PathVariable UUID id) {
+    @PreAuthorize("hasRole('ONG')")
+    public ResponseEntity<Void> deleteTransacaoById(@PathVariable Long id) {
         transacaoServ.deleteById(id);
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

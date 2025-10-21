@@ -1,15 +1,15 @@
 package com.banka.api.repositories;
 
-import com.banka.api.models.Usuario;
+import com.banka.api.models.Admin;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
-import java.util.UUID;
 
 @Repository
-public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
-    Optional<Usuario> findByUsername(String username);
+public interface AdminRepository extends JpaRepository<Admin, Long> {
+    Optional<Admin> findByUsername(String username);
 
+    boolean existsByUsername(String username);
     boolean existsByEmail(String email);
 }
