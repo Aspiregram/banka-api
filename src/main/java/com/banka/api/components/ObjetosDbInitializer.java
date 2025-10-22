@@ -5,10 +5,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
-public class DbObjectsInitializer implements CommandLineRunner {
+public class ObjetosDbInitializer implements CommandLineRunner {
     private final JdbcTemplate jdbcTemp;
 
-    public DbObjectsInitializer(JdbcTemplate jdbcTemp) {
+    public ObjetosDbInitializer(JdbcTemplate jdbcTemp) {
         this.jdbcTemp = jdbcTemp;
     }
 

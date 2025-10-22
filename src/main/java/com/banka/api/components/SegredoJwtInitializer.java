@@ -11,7 +11,7 @@ import java.util.Scanner;
 import java.util.concurrent.*;
 
 @Component
-public class JwtSecretInitializer implements CommandLineRunner {
+public class SegredoJwtInitializer implements CommandLineRunner {
     private final Scanner scan = new Scanner(System.in);
     private final ExecutorService exeServ = Executors.newSingleThreadExecutor();
 
