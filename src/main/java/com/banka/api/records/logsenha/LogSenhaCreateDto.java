@@ -1,4 +1,4 @@
-package com.banka.api.records.log;
+package com.banka.api.records.logsenha;
 
 import jakarta.validation.constraints.NotBlank;
 

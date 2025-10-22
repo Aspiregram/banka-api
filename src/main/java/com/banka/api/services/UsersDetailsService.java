@@ -23,18 +23,18 @@ public class UsersDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        if (adminRepo.findByUsername(username).isPresent())
+        if (adminRepo.findByUsername(username).isPresent()) {
             return adminRepo.findByUsername(username)
                     .orElseThrow(() -> new UsernameNotFoundException
                             ("Admin com username \"" + username + "\" não pode ser encontrado"));
-
-        if (ongRepo.findByUsername(username).isPresent())
+        } else if (ongRepo.findByUsername(username).isPresent()) {
             return ongRepo.findByUsername(username)
                     .orElseThrow(() -> new UsernameNotFoundException
                             ("ONG com username \"" + username + "\" não pode ser encontrada"));
-
-        return clienteRepo.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException
-                        ("Cliente com username \"" + username + "\" não pode ser encontrado"));
+        } else {
+            return clienteRepo.findByUsername(username)
+                    .orElseThrow(() -> new UsernameNotFoundException
+                            ("Cliente com username \"" + username + "\" não pode ser encontrado"));
+        }
     }
 }

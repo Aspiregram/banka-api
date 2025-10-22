@@ -11,5 +11,6 @@ public interface OngRepository extends JpaRepository<Ong, Long> {
     Optional<Ong> findByUsername(String username);
 
     boolean existsByUsername(String username);
+
     boolean existsByEmail(String email);
 }

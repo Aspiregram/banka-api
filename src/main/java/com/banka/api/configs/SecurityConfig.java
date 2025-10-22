@@ -3,6 +3,7 @@ package com.banka.api.configs;
 import com.banka.api.components.JwtAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -28,10 +29,22 @@ public class SecurityConfig {
                 .authorizeHttpRequests
                         (a ->
                                 a
+                                        // AuthController
                                         .requestMatchers("/auth/**").permitAll()
-                                        .requestMatchers("/admins/**").hasRole("ADMIN")
-                                        .requestMatchers("/ongs/**").hasRole("ADMIN")
-                                        .requestMatchers("/clientes/**").hasRole("ONG")
+                                        // AdminController, OngController, PaisController e MoedaController
+                                        .requestMatchers("/admins/**", "/ongs/**", "/paises/**", "/moedas/**")
+                                        .hasRole("ADMIN")
+                                        // Requisições GET em PaisController e MoedaController
+                                        .requestMatchers(HttpMethod.GET, "/paises/*", "/paises/{id}", "/moedas/*", "/moedas/{id}")
+                                        .hasAnyRole("ADMIN", "ONG")
+                                        // ClienteController, ContaController, LogSenhaController e TransacaoController
+                                        .requestMatchers("/clientes/**", "/contas/**", "/logs-senha/**", "/transacoes/**")
+                                        .hasRole("ONG")
+                                        // Requisições POST em TransacaoController
+                                        .requestMatchers(HttpMethod.POST, "/transacoes/*").hasRole("CLIENTE")
+                                        // Requisições GET em TransacaoController
+                                        .requestMatchers(HttpMethod.GET, "/transacoes/*", "/transacoes/{id}")
+                                        .hasAnyRole("ONG", "CLIENTE")
                                         .anyRequest().authenticated());
 
         httpSec.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

@@ -2,8 +2,8 @@ package com.banka.api.services;
 
 import com.banka.api.exceptions.EntityNotFoundException;
 import com.banka.api.models.LogSenha;
-import com.banka.api.records.log.LogSenhaCreateDto;
-import com.banka.api.records.log.LogSenhaResponseDto;
+import com.banka.api.records.logsenha.LogSenhaCreateDto;
+import com.banka.api.records.logsenha.LogSenhaResponseDto;
 import com.banka.api.repositories.LogSenhaRepository;
 import com.banka.api.repositories.OngRepository;
 import com.banka.api.repositories.ContaRepository;

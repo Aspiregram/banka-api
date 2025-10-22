@@ -32,7 +32,9 @@ public class TransacaoService {
     public TransacaoResponseDto save(TransacaoCreateDto transacaoCreateDto) {
         Transacao transacao = fromCreateDto(transacaoCreateDto);
 
-        transacao.setTipo(Tipo.fromString(transacaoCreateDto.tipo().name()));
+        String removido = transacaoCreateDto.tipo().name()
+                .replaceFirst("^TIPO_", "");
+        transacao.setTipo(Tipo.fromString(removido));
 
         Transacao transacaoSalva = transacaoRepo.save(transacao);
 
