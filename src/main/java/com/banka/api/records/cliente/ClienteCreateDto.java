@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public record ClienteCreateDto(
-        UsuarioCreateDto usuCreateDto,
+        UsuarioCreateDto usuCrtDto,
 
         @NotBlank(message = "Senha não deve ser nulo, vazio ou em branco")
         @Size(max = 50, message = "Documento não deve ultrapassar 50 caracteres em tamanho")

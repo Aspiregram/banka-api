@@ -1,6 +1,6 @@
 package com.banka.api.records.autenticacao;
 
-public record AuthResDto(
+public record AuthResponseDto(
         String token
 ) {
 }

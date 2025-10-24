@@ -26,12 +26,12 @@ public class MoedaService {
 
     // POST
     @Transactional
-    public MoedaResponseDto save(MoedaCreateDto moedaCreateDto) {
-        if (moedaRepo.existsBySigla(moedaCreateDto.sigla()))
+    public MoedaResponseDto save(MoedaCreateDto moedaCrtDto) {
+        if (moedaRepo.existsBySigla(moedaCrtDto.sigla()))
             throw new ResourceConflictException
                     ("Uma moeda já possui essa sigla");
 
-        Moeda moeda = fromCreateDto(moedaCreateDto);
+        Moeda moeda = fromCreateDto(moedaCrtDto);
         Moeda moedaSalva = moedaRepo.save(moeda);
 
         return toResponseDto(moedaSalva);
@@ -98,15 +98,15 @@ public class MoedaService {
         moedaRepo.deleteById(id);
     }
 
-    private Moeda fromCreateDto(MoedaCreateDto moedaCreateDto) {
+    private Moeda fromCreateDto(MoedaCreateDto moedaCrtDto) {
         return new Moeda(
                 null,
-                moedaCreateDto.nome(),
-                moedaCreateDto.sigla(),
-                moedaCreateDto.taxaConversao(),
-                paisRepo.findById(moedaCreateDto.pais())
+                moedaCrtDto.nome(),
+                moedaCrtDto.sigla(),
+                moedaCrtDto.taxaConversao(),
+                paisRepo.findById(moedaCrtDto.pais())
                         .orElseThrow(() -> new EntityNotFoundException
-                                ("O país com ID \"" + moedaCreateDto.pais() + "\" não pode ser encontrado")));
+                                ("O país com ID \"" + moedaCrtDto.pais() + "\" não pode ser encontrado")));
     }
 
     private MoedaResponseDto toResponseDto(Moeda moeda) {

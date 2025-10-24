@@ -27,21 +27,21 @@ public class AdminService {
 
     // POST
     @Transactional
-    public AdminResponseDto save(AdminCreateDto adminCreateDto) {
-        if (adminRepo.existsByUsername(adminCreateDto.usuCreateDto().username())
-                || adminRepo.existsByEmail(adminCreateDto.usuCreateDto().email()))
+    public AdminResponseDto save(AdminCreateDto adminCrtDto) {
+        if (adminRepo.existsByUsername(adminCrtDto.usuCrtDto().username())
+                || adminRepo.existsByEmail(adminCrtDto.usuCrtDto().email()))
             throw new ResourceConflictException
                     ("Um admin já possui esse username e/ou email");
 
         Admin admin = new Admin();
 
         admin.setId(null);
-        admin.setUsername(adminCreateDto.usuCreateDto().username());
-        admin.setNome(adminCreateDto.usuCreateDto().nome());
-        admin.setSobrenome(adminCreateDto.usuCreateDto().sobrenome());
-        admin.setEmail(adminCreateDto.usuCreateDto().email());
+        admin.setUsername(adminCrtDto.usuCrtDto().username());
+        admin.setNome(adminCrtDto.usuCrtDto().nome());
+        admin.setSobrenome(adminCrtDto.usuCrtDto().sobrenome());
+        admin.setEmail(adminCrtDto.usuCrtDto().email());
         admin.setSenha(passEncod.encode(
-                adminCreateDto.usuCreateDto().senha()));
+                adminCrtDto.usuCrtDto().senha()));
         admin.setRole(null);
         admin.setCriadoEm(null);
         admin.setUltimoLogin(null);
@@ -80,12 +80,12 @@ public class AdminService {
                 .orElseThrow(() -> new EntityNotFoundException
                         ("O admin com ID \"" + id + "\" não pode ser encontrado"));
 
-        adminEncontrado.setUsername(adminUptDto.usuUpdateDto().username());
-        adminEncontrado.setNome(adminUptDto.usuUpdateDto().nome());
-        adminEncontrado.setSobrenome(adminUptDto.usuUpdateDto().sobrenome());
-        adminEncontrado.setEmail(adminUptDto.usuUpdateDto().email());
+        adminEncontrado.setUsername(adminUptDto.usuUptDto().username());
+        adminEncontrado.setNome(adminUptDto.usuUptDto().nome());
+        adminEncontrado.setSobrenome(adminUptDto.usuUptDto().sobrenome());
+        adminEncontrado.setEmail(adminUptDto.usuUptDto().email());
         adminEncontrado.setSenha(
-                passEncod.encode(adminUptDto.usuUpdateDto().senha()));
+                passEncod.encode(adminUptDto.usuUptDto().senha()));
 
         Admin adminAtualizado = adminRepo.save(adminEncontrado);
 

@@ -18,20 +18,21 @@ public class SegredoJwtInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         System.out.println("Gerar um novo segredo JWT? ((S)IM | (N)ÃO)");
-        Future<String> futuro = exeServ.submit(() -> scan.next());
+        Future<Character> futuro = exeServ.submit(() -> scan.next()
+                .toUpperCase().charAt(0));
 
-        String resposta = "";
+        char resposta = 0;
 
         try {
-            resposta = futuro.get(5, TimeUnit.SECONDS).toUpperCase();
+            resposta = futuro.get(5, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
-            System.out.println("Nenhuma resposta. Cancelando operação...");
+            System.out.println("Nenhuma resposta. Inicialização encerrada");
         } finally {
             scan.close();
             exeServ.shutdown();
         }
 
-        if (resposta.startsWith("S")) {
+        if (resposta == 'S') {
             SecretKey chave = Keys.secretKeyFor(SignatureAlgorithm.HS256);
             String chaveBase64 = Base64.getEncoder().encodeToString(chave.getEncoded());
 

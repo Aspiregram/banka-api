@@ -32,21 +32,21 @@ public class OngService {
 
     // POST
     @Transactional
-    public OngResponseDto save(OngCreateDto ongCreateDto) {
-        if (ongRepo.existsByUsername(ongCreateDto.usuCreateDto().username())
-                || ongRepo.existsByEmail(ongCreateDto.usuCreateDto().email()))
+    public OngResponseDto save(OngCreateDto ongCrtDto) {
+        if (ongRepo.existsByUsername(ongCrtDto.usuCrtDto().username())
+                || ongRepo.existsByEmail(ongCrtDto.usuCrtDto().email()))
             throw new ResourceConflictException
                     ("Uma ONG já possui esse username e/ou email");
 
-        Ong ong = fromCreateDto(ongCreateDto);
+        Ong ong = fromCreateDto(ongCrtDto);
 
         ong.setId(null);
-        ong.setUsername(ongCreateDto.usuCreateDto().username());
-        ong.setNome(ongCreateDto.usuCreateDto().nome());
-        ong.setSobrenome(ongCreateDto.usuCreateDto().sobrenome());
-        ong.setEmail(ongCreateDto.usuCreateDto().email());
+        ong.setUsername(ongCrtDto.usuCrtDto().username());
+        ong.setNome(ongCrtDto.usuCrtDto().nome());
+        ong.setSobrenome(ongCrtDto.usuCrtDto().sobrenome());
+        ong.setEmail(ongCrtDto.usuCrtDto().email());
         ong.setSenha(passEncod.encode(
-                ongCreateDto.usuCreateDto().senha()));
+                ongCrtDto.usuCrtDto().senha()));
         ong.setRole(null);
         ong.setCriadoEm(null);
         ong.setUltimoLogin(null);
@@ -124,15 +124,14 @@ public class OngService {
         ongRepo.deleteById(id);
     }
 
-    private Ong fromCreateDto(OngCreateDto ongCreateDto) {
+    private Ong fromCreateDto(OngCreateDto ongCrtDto) {
         return new Ong(
-                ongCreateDto.telefone(),
-                paisRepo.findById(ongCreateDto.pais())
+                ongCrtDto.telefone(),
+                paisRepo.findById(ongCrtDto.pais())
                         .orElseThrow(() -> new EntityNotFoundException
-                                ("O país com ID \"" + ongCreateDto.pais()
+                                ("O país com ID \"" + ongCrtDto.pais()
                                         + "\" não pode ser encontrado")),
-                ongCreateDto.saldoGlobal(),
-                null
+                ongCrtDto.saldoGlobal()
         );
     }
 
@@ -150,11 +149,7 @@ public class OngService {
                 ),
                 ong.getTelefone(),
                 ong.getPais().getId(),
-                ong.getSaldoGlobal(),
-                ong.getClientes()
-                        .stream()
-                        .map(Cliente::getId)
-                        .collect(Collectors.toSet())
+                ong.getSaldoGlobal()
         );
     }
 }

@@ -31,20 +31,22 @@ public class SecurityConfig {
                                 a
                                         // AuthController
                                         .requestMatchers("/auth/**").permitAll()
-                                        // AdminController, OngController, PaisController e MoedaController
-                                        .requestMatchers("/admins/**", "/ongs/**", "/paises/**", "/moedas/**")
-                                        .hasRole("ADMIN")
                                         // Requisições GET em PaisController e MoedaController
                                         .requestMatchers(HttpMethod.GET, "/paises/*", "/paises/{id}", "/moedas/*", "/moedas/{id}")
                                         .hasAnyRole("ADMIN", "ONG")
-                                        // ClienteController, ContaController, LogSenhaController e TransacaoController
-                                        .requestMatchers("/clientes/**", "/contas/**", "/logs-senha/**", "/transacoes/**")
-                                        .hasRole("ONG")
+                                        // AdminController, OngController, PaisController e MoedaController
+                                        .requestMatchers("/admins/**", "/ongs/**", "/paises/**", "/moedas/**")
+                                        .hasRole("ADMIN")
+                                        // Requisições GET em ClienteController
+                                        .requestMatchers(HttpMethod.GET, "/clientes/ong/{ongId}").hasRole("ADMIN")
                                         // Requisições POST em TransacaoController
                                         .requestMatchers(HttpMethod.POST, "/transacoes/*").hasRole("CLIENTE")
                                         // Requisições GET em TransacaoController
                                         .requestMatchers(HttpMethod.GET, "/transacoes/*", "/transacoes/{id}")
                                         .hasAnyRole("ONG", "CLIENTE")
+                                        // ClienteController, ContaController, LogSenhaController e TransacaoController
+                                        .requestMatchers("/clientes/**", "/contas/**", "/logs-senha/**", "/transacoes/**")
+                                        .hasRole("ONG")
                                         .anyRequest().authenticated());
 
         httpSec.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

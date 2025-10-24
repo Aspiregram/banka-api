@@ -28,8 +28,8 @@ public class LogSenhaService {
 
     // POST
     @Transactional
-    public LogSenhaResponseDto save(LogSenhaCreateDto logSenhaCreateDto) {
-        LogSenha logSenha = fromCreateDto(logSenhaCreateDto);
+    public LogSenhaResponseDto save(LogSenhaCreateDto logSenhaCrtDto) {
+        LogSenha logSenha = fromCreateDto(logSenhaCrtDto);
         LogSenha logSenhaSalvo = logSenhaRepo.save(logSenha);
 
         return toResponseDto(logSenhaSalvo);
@@ -77,19 +77,19 @@ public class LogSenhaService {
         logSenhaRepo.deleteById(id);
     }
 
-    private LogSenha fromCreateDto(LogSenhaCreateDto logSenhaCreateDto) {
+    private LogSenha fromCreateDto(LogSenhaCreateDto logSenhaCrtDto) {
         return new LogSenha(
                 null,
-                contaRepo.findById(logSenhaCreateDto.conta())
+                contaRepo.findById(logSenhaCrtDto.conta())
                         .orElseThrow(() -> new EntityNotFoundException
-                                ("O país com ID \"" + logSenhaCreateDto.conta()
+                                ("O país com ID \"" + logSenhaCrtDto.conta()
                                         + "\" não pode ser encontrado")),
-                ongRepo.findById(logSenhaCreateDto.ong())
+                ongRepo.findById(logSenhaCrtDto.ong())
                         .orElseThrow(() -> new EntityNotFoundException
-                                ("A ONG com ID \"" + logSenhaCreateDto.ong()
+                                ("A ONG com ID \"" + logSenhaCrtDto.ong()
                                         + "\" não pode ser encontrada")),
-                logSenhaCreateDto.dataAlteracao(),
-                logSenhaCreateDto.motivo());
+                logSenhaCrtDto.dataAlteracao(),
+                logSenhaCrtDto.motivo());
     }
 
     private LogSenhaResponseDto toResponseDto(LogSenha logSenha) {

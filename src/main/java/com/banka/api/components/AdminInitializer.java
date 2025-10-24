@@ -28,7 +28,7 @@ public class AdminInitializer implements CommandLineRunner {
 
             adminRepo.save(admin);
 
-            System.out.println(admin + " criado");
+            System.out.println("admin criado");
         }
     }
 }

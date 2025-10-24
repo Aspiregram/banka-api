@@ -34,21 +34,21 @@ public class ClienteService {
 
     // POST
     @Transactional
-    public ClienteResponseDto save(ClienteCreateDto clienteCreateDto) {
-        if (clienteRepo.existsByUsername(clienteCreateDto.usuCreateDto().username())
-                || clienteRepo.existsByEmail(clienteCreateDto.usuCreateDto().email()))
+    public ClienteResponseDto save(ClienteCreateDto clienteCrtDto) {
+        if (clienteRepo.existsByUsername(clienteCrtDto.usuCrtDto().username())
+                || clienteRepo.existsByEmail(clienteCrtDto.usuCrtDto().email()))
             throw new ResourceConflictException
                     ("Um cliente já possui esse username e/ou email");
 
-        Cliente cliente = fromCreateDto(clienteCreateDto);
+        Cliente cliente = fromCreateDto(clienteCrtDto);
 
         cliente.setId(null);
-        cliente.setUsername(clienteCreateDto.usuCreateDto().username());
-        cliente.setNome(clienteCreateDto.usuCreateDto().nome());
-        cliente.setSobrenome(clienteCreateDto.usuCreateDto().sobrenome());
-        cliente.setEmail(clienteCreateDto.usuCreateDto().email());
+        cliente.setUsername(clienteCrtDto.usuCrtDto().username());
+        cliente.setNome(clienteCrtDto.usuCrtDto().nome());
+        cliente.setSobrenome(clienteCrtDto.usuCrtDto().sobrenome());
+        cliente.setEmail(clienteCrtDto.usuCrtDto().email());
         cliente.setSenha(passEncod.encode(
-                clienteCreateDto.usuCreateDto().senha()));
+                clienteCrtDto.usuCrtDto().senha()));
         cliente.setRole(null);
         cliente.setCriadoEm(null);
         cliente.setUltimoLogin(null);
@@ -80,6 +80,19 @@ public class ClienteService {
         return toResponseDto(clienteEncontrado);
     }
 
+    // GET
+    public List<ClienteResponseDto> findByOngId(Long ongId) {
+        List<Cliente> clientes = clienteRepo.findByOngId(ongId);
+
+        if (clientes.isEmpty())
+            throw new EntityNotFoundException
+                    ("Não há clientes registrados com alguma ONG");
+
+        return clientes.stream()
+                .map(this::toResponseDto)
+                .collect(Collectors.toList());
+    }
+
     // PUT
     @Transactional
     public ClienteResponseDto update(Long id, ClienteUpdateDto clienteUptDto) {
@@ -87,12 +100,12 @@ public class ClienteService {
                 .orElseThrow(() -> new EntityNotFoundException
                         ("O cliente com ID \"" + id + "\" não pode ser encontrado"));
 
-        clienteEncontrado.setUsername(clienteUptDto.usuUpdateDto().username());
-        clienteEncontrado.setNome(clienteUptDto.usuUpdateDto().nome());
-        clienteEncontrado.setSobrenome(clienteUptDto.usuUpdateDto().sobrenome());
-        clienteEncontrado.setEmail(clienteUptDto.usuUpdateDto().email());
+        clienteEncontrado.setUsername(clienteUptDto.usuUptDto().username());
+        clienteEncontrado.setNome(clienteUptDto.usuUptDto().nome());
+        clienteEncontrado.setSobrenome(clienteUptDto.usuUptDto().sobrenome());
+        clienteEncontrado.setEmail(clienteUptDto.usuUptDto().email());
         clienteEncontrado.setSenha(
-                passEncod.encode(clienteUptDto.usuUpdateDto().senha()));
+                passEncod.encode(clienteUptDto.usuUptDto().senha()));
         clienteEncontrado.setDocumento(clienteUptDto.documento());
         clienteEncontrado.setPaisOrigem(
                 paisRepo.findById(clienteUptDto.paisOrigem())
@@ -135,20 +148,20 @@ public class ClienteService {
         clienteRepo.deleteById(id);
     }
 
-    private Cliente fromCreateDto(ClienteCreateDto clienteCreateDto) {
+    private Cliente fromCreateDto(ClienteCreateDto clienteCrtDto) {
         return new Cliente(
-                clienteCreateDto.documento(),
-                paisRepo.findById(clienteCreateDto.paisOrigem())
+                clienteCrtDto.documento(),
+                paisRepo.findById(clienteCrtDto.paisOrigem())
                         .orElseThrow(() -> new EntityNotFoundException
-                                ("O país com ID \"" + clienteCreateDto.paisOrigem()
+                                ("O país com ID \"" + clienteCrtDto.paisOrigem()
                                         + "\" não pode ser encontrado")),
-                paisRepo.findById(clienteCreateDto.paisAtual())
+                paisRepo.findById(clienteCrtDto.paisAtual())
                         .orElseThrow(() -> new EntityNotFoundException
-                                ("O país com ID \"" + clienteCreateDto.paisAtual()
+                                ("O país com ID \"" + clienteCrtDto.paisAtual()
                                         + "\" não pode ser encontrado")),
-                ongRepo.findById(clienteCreateDto.ong())
+                ongRepo.findById(clienteCrtDto.ong())
                         .orElseThrow(() -> new EntityNotFoundException
-                                ("A ONG com ID \"" + clienteCreateDto.ong()
+                                ("A ONG com ID \"" + clienteCrtDto.ong()
                                         + "\" não pode ser encontrada")),
                 null
         );

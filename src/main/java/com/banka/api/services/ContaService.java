@@ -30,15 +30,15 @@ public class ContaService {
 
     // POST
     @Transactional
-    public ContaResponseDto save(ContaCreateDto contaCreateDto) {
-        var cliente = clienteRepo.findById(contaCreateDto.cliente())
+    public ContaResponseDto save(ContaCreateDto contaCrtDto) {
+        var cliente = clienteRepo.findById(contaCrtDto.cliente())
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "O cliente com ID \"" + contaCreateDto.cliente() + "\" não pode ser encontrado"));
+                        "O cliente com ID \"" + contaCrtDto.cliente() + "\" não pode ser encontrado"));
 
         if (contaRepo.existsByCliente(cliente))
             throw new ResourceConflictException("Uma conta já possui esse cliente");
 
-        Conta conta = fromCreateDto(contaCreateDto);
+        Conta conta = fromCreateDto(contaCrtDto);
         Conta contaSalva = contaRepo.save(conta);
 
         return toResponseDto(contaSalva);
@@ -106,16 +106,16 @@ public class ContaService {
         contaRepo.deleteById(id);
     }
 
-    private Conta fromCreateDto(ContaCreateDto contaCreateDto) {
+    private Conta fromCreateDto(ContaCreateDto contaCrtDto) {
         return new Conta(
                 null,
-                clienteRepo.findById(contaCreateDto.cliente())
+                clienteRepo.findById(contaCrtDto.cliente())
                         .orElseThrow(() -> new EntityNotFoundException
-                                ("O cliente com ID \"" + contaCreateDto.cliente() + "\" não pode ser encontrado")),
-                moedaRepo.findById(contaCreateDto.moeda())
+                                ("O cliente com ID \"" + contaCrtDto.cliente() + "\" não pode ser encontrado")),
+                moedaRepo.findById(contaCrtDto.moeda())
                         .orElseThrow(() -> new EntityNotFoundException
-                                ("A moeda com ID \"" + contaCreateDto.moeda() + "\" não pode ser encontrada")),
-                contaCreateDto.saldo(),
+                                ("A moeda com ID \"" + contaCrtDto.moeda() + "\" não pode ser encontrada")),
+                contaCrtDto.saldo(),
                 null);
     }
 

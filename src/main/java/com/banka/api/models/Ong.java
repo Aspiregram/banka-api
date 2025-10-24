@@ -27,14 +27,8 @@ public class Ong extends Usuario {
     @Column(precision = 15, scale = 2)
     private BigDecimal saldoGlobal;
 
-    @OneToMany(mappedBy = "ong", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JsonIgnore
-    private Set<Cliente> clientes;
-
     @Override
     public void onCreate() {
-        clientes = new HashSet<>();
-
         if (saldoGlobal == null)
             saldoGlobal = BigDecimal.ZERO;
 

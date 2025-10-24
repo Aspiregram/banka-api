@@ -4,7 +4,7 @@ import com.banka.api.records.usuario.UsuarioUpdateDto;
 import jakarta.validation.constraints.Size;
 
 public record ClienteUpdateDto(
-        UsuarioUpdateDto usuUpdateDto,
+        UsuarioUpdateDto usuUptDto,
 
         @Size(max = 50, message = "Documento não deve ultrapassar 50 caracteres em tamanho")
         String documento,

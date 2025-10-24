@@ -6,10 +6,9 @@ import java.math.BigDecimal;
 import java.util.Set;
 
 public record OngResponseDto(
-        UsuarioResponseDto usuResponseDto,
+        UsuarioResponseDto usuResDto,
         String telefone,
         Long pais,
-        BigDecimal saldoGlobal,
-        Set<Long> clientes
+        BigDecimal saldoGlobal
 ) {
 }

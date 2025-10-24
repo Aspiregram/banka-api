@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 
 public record OngCreateDto(
-        UsuarioCreateDto usuCreateDto,
+        UsuarioCreateDto usuCrtDto,
 
         @NotBlank(message = "Telefone não deve ser nulo, vazio ou em branco")
         @Size(max = 30, message = "Telefone não deve ultrapassar 30 caracteres em tamanho")

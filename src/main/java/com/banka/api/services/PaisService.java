@@ -23,12 +23,12 @@ public class PaisService {
 
     // POST
     @Transactional
-    public PaisResponseDto save(PaisCreateDto paisCreateDto) {
-        if (paisRepo.existsByNome(paisCreateDto.nome()))
+    public PaisResponseDto save(PaisCreateDto paisCrtDto) {
+        if (paisRepo.existsByNome(paisCrtDto.nome()))
             throw new ResourceConflictException
                     ("Um país já possui esse nome");
 
-        Pais pais = fromCreateDto(paisCreateDto);
+        Pais pais = fromCreateDto(paisCrtDto);
         Pais paisSalvo = paisRepo.save(pais);
 
         return toResponseDto(paisSalvo);
@@ -91,11 +91,11 @@ public class PaisService {
         paisRepo.deleteById(id);
     }
 
-    private Pais fromCreateDto(PaisCreateDto paisCreateDto) {
+    private Pais fromCreateDto(PaisCreateDto paisCrtDto) {
         return new Pais(
                 null,
-                paisCreateDto.nome(),
-                paisCreateDto.isoCode()
+                paisCrtDto.nome(),
+                paisCrtDto.isoCode()
         );
     }
 

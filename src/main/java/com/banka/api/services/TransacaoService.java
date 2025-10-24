@@ -29,10 +29,10 @@ public class TransacaoService {
 
     // POST
     @Transactional
-    public TransacaoResponseDto save(TransacaoCreateDto transacaoCreateDto) {
-        Transacao transacao = fromCreateDto(transacaoCreateDto);
+    public TransacaoResponseDto save(TransacaoCreateDto transacaoCrtDto) {
+        Transacao transacao = fromCreateDto(transacaoCrtDto);
 
-        String removido = transacaoCreateDto.tipo().name()
+        String removido = transacaoCrtDto.tipo().name()
                 .replaceFirst("^TIPO_", "");
         transacao.setTipo(Tipo.fromString(removido));
 
@@ -83,28 +83,28 @@ public class TransacaoService {
         transacaoRepo.deleteById(id);
     }
 
-    private Transacao fromCreateDto(TransacaoCreateDto transacaoCreateDto) {
+    private Transacao fromCreateDto(TransacaoCreateDto transacaoCrtDto) {
         return new Transacao(
                 null,
-                contaRepo.findById(transacaoCreateDto.contaOrigem())
+                contaRepo.findById(transacaoCrtDto.contaOrigem())
                         .orElseThrow(() -> new EntityNotFoundException
-                                ("A conta originária com ID \"" + transacaoCreateDto.contaOrigem()
+                                ("A conta originária com ID \"" + transacaoCrtDto.contaOrigem()
                                         + "\" não pode ser encontrada")),
-                contaRepo.findById(transacaoCreateDto.contaDestino())
+                contaRepo.findById(transacaoCrtDto.contaDestino())
                         .orElseThrow(() -> new EntityNotFoundException
-                                ("A conta destinária com ID \"" + transacaoCreateDto.contaDestino()
+                                ("A conta destinária com ID \"" + transacaoCrtDto.contaDestino()
                                         + "\" não pode ser encontrada")),
-                transacaoCreateDto.valorOriginal(),
-                moedaRepo.findById(transacaoCreateDto.moedaOrigem())
+                transacaoCrtDto.valorOriginal(),
+                moedaRepo.findById(transacaoCrtDto.moedaOrigem())
                         .orElseThrow(() -> new EntityNotFoundException
-                                ("A moeda originária com ID \"" + transacaoCreateDto.moedaOrigem()
+                                ("A moeda originária com ID \"" + transacaoCrtDto.moedaOrigem()
                                         + "\" não pode ser encontrada")),
-                transacaoCreateDto.valorConvertido(),
-                moedaRepo.findById(transacaoCreateDto.moedaDestino())
+                transacaoCrtDto.valorConvertido(),
+                moedaRepo.findById(transacaoCrtDto.moedaDestino())
                         .orElseThrow(() -> new EntityNotFoundException
-                                ("A moeda destinária com ID \"" + transacaoCreateDto.moedaDestino()
+                                ("A moeda destinária com ID \"" + transacaoCrtDto.moedaDestino()
                                         + "\" não pode ser encontrada")),
-                transacaoCreateDto.taxaUtilizada(),
+                transacaoCrtDto.taxaUtilizada(),
                 null,
                 null,
                 null);
