@@ -1,6 +1,7 @@
 package com.banka.api.controllers;
 
 import com.banka.api.records.transacao.TransacaoCreateDto;
+import com.banka.api.records.transacao.TransacaoResponseByOngDto;
 import com.banka.api.records.transacao.TransacaoResponseDto;
 import com.banka.api.services.TransacaoService;
 import org.springframework.http.HttpStatus;
@@ -41,6 +42,14 @@ public class TransacaoController {
         TransacaoResponseDto transacaoEncontrada = transacaoServ.findById(id);
 
         return ResponseEntity.status(HttpStatus.FOUND).body(transacaoEncontrada);
+    }
+
+    @GetMapping("/por-ong/{ongId}")
+    @PreAuthorize("hasRole('ONG')")
+    public ResponseEntity<List<TransacaoResponseByOngDto>> findTransacaoByOngId(@PathVariable Long ongId) {
+        List<TransacaoResponseByOngDto> transacoesListadas = transacaoServ.findByOngId(ongId);
+
+        return ResponseEntity.status(HttpStatus.FOUND).body(transacoesListadas);
     }
 
     @DeleteMapping

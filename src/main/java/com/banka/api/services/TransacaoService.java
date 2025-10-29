@@ -2,8 +2,10 @@ package com.banka.api.services;
 
 import com.banka.api.enums.Tipo;
 import com.banka.api.exceptions.EntityNotFoundException;
+import com.banka.api.models.Ong;
 import com.banka.api.models.Transacao;
 import com.banka.api.records.transacao.TransacaoCreateDto;
+import com.banka.api.records.transacao.TransacaoResponseByOngDto;
 import com.banka.api.records.transacao.TransacaoResponseDto;
 import com.banka.api.repositories.ContaRepository;
 import com.banka.api.repositories.TransacaoRepository;
@@ -31,11 +33,6 @@ public class TransacaoService {
     @Transactional
     public TransacaoResponseDto save(TransacaoCreateDto transacaoCrtDto) {
         Transacao transacao = fromCreateDto(transacaoCrtDto);
-
-        String removido = transacaoCrtDto.tipo().name()
-                .replaceFirst("^TIPO_", "");
-        transacao.setTipo(Tipo.fromString(removido));
-
         Transacao transacaoSalva = transacaoRepo.save(transacao);
 
         return toResponseDto(transacaoSalva);
@@ -61,6 +58,19 @@ public class TransacaoService {
                         ("A transação com ID \"" + id + "\" não pode ser encontrada"));
 
         return toResponseDto(transacaoEncontrada);
+    }
+
+    // GET
+    public List<TransacaoResponseByOngDto> findByOngId(Long ongId) {
+        List<Transacao> transacoes = transacaoRepo.findAllByContaOrigem_Cliente_Ong_Id(ongId);
+
+        if (transacoes.isEmpty())
+            throw new EntityNotFoundException
+                    ("Não há transações registradas com essa ONG");
+
+        return transacoes.stream()
+                .map(this::toResponseOngDto)
+                .collect(Collectors.toList());
     }
 
     // DELETE
@@ -105,7 +115,7 @@ public class TransacaoService {
                                 ("A moeda destinária com ID \"" + transacaoCrtDto.moedaDestino()
                                         + "\" não pode ser encontrada")),
                 transacaoCrtDto.taxaUtilizada(),
-                null,
+                transacaoCrtDto.tipo(),
                 null,
                 null);
     }
@@ -122,6 +132,22 @@ public class TransacaoService {
                 transacao.getTaxaUtilizada(),
                 transacao.getTipo(),
                 transacao.getStatus(),
+                transacao.getDataTransacao()
+        );
+    }
+
+    private TransacaoResponseByOngDto toResponseOngDto(Transacao transacao) {
+        return new TransacaoResponseByOngDto(
+                transacao.getId(),
+                transacao.getContaOrigem().getCliente().getNome(),
+                transacao.getContaDestino().getCliente().getNome(),
+                transacao.getValorOriginal(),
+                transacao.getMoedaOrigem().getPais().getNome(),
+                transacao.getMoedaOrigem().getNome(),
+                transacao.getValorConvertido(),
+                transacao.getMoedaOrigem().getPais().getNome(),
+                transacao.getMoedaDestino().getNome(),
+                transacao.getTaxaUtilizada(),
                 transacao.getDataTransacao()
         );
     }

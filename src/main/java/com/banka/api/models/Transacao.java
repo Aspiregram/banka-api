@@ -57,7 +57,7 @@ public class Transacao {
 
     @PrePersist
     public void onCreate() {
-        status = Status.STATUS_PENDENTE;
+        status = Status.PENDENTE;
         dataTransacao = LocalDateTime.now();
     }
 }

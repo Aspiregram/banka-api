@@ -44,7 +44,7 @@ public class ClienteController {
         return ResponseEntity.status(HttpStatus.FOUND).body(clienteEncontrado);
     }
 
-    @GetMapping("/ong/{ongId}")
+    @GetMapping("/por-ong/{ongId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<ClienteResponseDto>> findClientesByOngId(@PathVariable Long ongId) {
         List<ClienteResponseDto> clientesEncontrados = clienteServ.findByOngId(ongId);
