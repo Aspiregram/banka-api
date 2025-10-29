@@ -15,7 +15,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-@EnableMethodSecurity
+// @EnableMethodSecurity
 public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
 
@@ -28,8 +28,8 @@ public class SecurityConfig {
         httpSec.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests
                         (a ->
-                                a
-                                        // AuthController
+                                        a
+                                        /* AuthController
                                         .requestMatchers("/auth/**").permitAll()
                                         // Requisições GET em PaisController e MoedaController
                                         .requestMatchers(HttpMethod.GET, "/paises/*", "/paises/{id}", "/moedas/*", "/moedas/{id}")
@@ -46,8 +46,8 @@ public class SecurityConfig {
                                         .hasAnyRole("ONG", "CLIENTE")
                                         // ClienteController, ContaController, LogSenhaController e TransacaoController
                                         .requestMatchers("/clientes/**", "/contas/**", "/logs-senha/**", "/transacoes/**")
-                                        .hasRole("ONG")
-                                        .anyRequest().authenticated());
+                                        .hasRole("ONG") */
+                                        .anyRequest().permitAll());
 
         httpSec.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
